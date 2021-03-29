@@ -99,7 +99,7 @@ repositories{
 dependencies{
 
     // =========  Common  =====================
-    embed 'de.erdbeerbaerlp:DiscordIntegration-Core:564b32d2'
+    embed 'de.erdbeerbaerlp:DiscordIntegration-Core:23c9dd1'
 
 
     // ============= Spigot =============
