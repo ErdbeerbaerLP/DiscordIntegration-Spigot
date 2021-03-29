@@ -1,0 +1,128 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven { url = "http://files.minecraftforge.net/maven" }
+
+        repositories {
+            maven {
+                url "https://plugins.gradle.org/m2/"
+
+            }
+        }
+    }
+    dependencies {
+        classpath "com.github.jengelman.gradle.plugins:shadow:4.0.4"
+    }
+}
+plugins {
+    id 'java'
+    id 'net.minecrell.plugin-yml.bukkit' version '0.3.0'
+}
+apply plugin: 'com.github.johnrengelman.shadow'
+
+version = "2.1.1"
+group = "de.erdbeerbaerlp.dcintegration"
+archivesBaseName = "dcintegration-spigot"
+
+
+sourceCompatibility = targetCompatibility = '1.8'
+compileJava {
+    sourceCompatibility = targetCompatibility = '1.8'
+}
+//ShadowJar
+configurations {
+    embed
+    compile.extendsFrom(embed)
+}
+shadowJar {
+    classifier = '1.16'
+    configurations = [project.configurations.embed]
+}
+artifacts {
+    archives tasks.shadowJar
+}
+
+//Generates plugin.yml
+bukkit {
+    name = "DiscordIntegration"
+    main = "de.erdbeerbaerlp.dcintegration.spigot.DiscordIntegration"
+    author = "ErdbeerbaerLP"
+    apiVersion = "1.16"
+    version = project.version
+    website = "https://spigotmc.org/resources/discordintegration.87196/"
+    commands {
+        discord {
+            aliases = ["dc"]
+            permission = "dcintegration.discord"
+        }
+    }
+    permissions {
+        'dcintegration.discord' {
+            description = "Gives access to the basic Discord Integration commands"
+            setDefault('TRUE')
+        }
+        'dcintegration.admin' {
+            description = "Gives access to the Discord Integration admin subcommands (like reload)"
+            setDefault('OP')
+        }
+    }
+    softDepend = ["Votifier", "dynmap", "floodgate-bukkit"]
+}
+
+
+repositories{
+    jcenter()
+    maven {
+        name = 'sonatype-oss'
+        url = 'https://oss.sonatype.org/content/repositories/snapshots/'
+    }
+
+    maven {
+        name = 'spigotmc-repo'
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+    }
+    maven {
+        name = 'sonatype'
+        url = 'https://oss.sonatype.org/content/groups/public/'
+    }
+    maven { url 'https://jitpack.io' }
+    maven { url "https://nexus.vankka.dev/repository/maven-public/" }
+    maven { url "https://repository.dev.gotan.io/repository/gotan.os/" }
+    maven { url "https://repo.opencollab.dev/maven-snapshots" }
+    maven { url "https://repo.opencollab.dev/maven-releases" }
+    maven{
+        name = 'howaner'
+        url = "http://repo.howaner.de/"
+    }
+}
+dependencies{
+
+    // =========  Common  =====================
+    embed 'de.erdbeerbaerlp:DiscordIntegration-Core:564b32d2'
+
+
+    // ============= Spigot =============
+    compileOnly 'org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT'
+
+
+    //Votifier
+    compileOnly('com.vexsoftware:votifier:1.9'){
+        transitive = false
+    }
+
+    //Dynmap-Bukkit for workaround
+    compileOnly('com.github.webbukkit.dynmap:dynmap-api:3.1-beta-7'){
+        transitive = false
+    }
+
+    //Floodgate
+    compileOnly('org.geysermc:floodgate-bukkit:1.0-SNAPSHOT')
+
+    //Dynmap-API
+    compileOnly('com.github.webbukkit:DynmapCoreAPI:2.5')
+}
+//Manifest attributes
+jar {
+    classifier = "1.16"
+}
