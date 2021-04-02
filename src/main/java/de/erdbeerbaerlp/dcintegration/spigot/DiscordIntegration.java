@@ -145,21 +145,23 @@ public class DiscordIntegration extends JavaPlugin {
     public void onEnable() {
         if (!active && discord_instance == null) loadDiscordInstance(); //In case of /reload or similar
         PluginManager pm = getServer().getPluginManager();
-        pm.registerEvents(new SpigotEventListener(), this);
-        if (pm.getPlugin("Votifier") != null) {
-            pm.registerEvents(new VotifierEventListener(), this);
-        }
-        if (pm.getPlugin("dynmap") != null) {
-            org.dynmap.DynmapCommonAPIListener.register(dynmapListener = new DynmapListener(true));
-            pm.registerEvents(new DynmapWorkaroundListener(),this);
-        }
-        final PluginCommand cmd = getServer().getPluginCommand("discord");
-        cmd.setExecutor(new McDiscordCommand());
-        cmd.setTabCompleter(new McDiscordCommand.TabCompleter());
 
-        bstats.addCustomChart(new Metrics.SimplePie("webhook_mode", () -> Configuration.instance().webhook.enable ? "Enabled" : "Disabled"));
-        bstats.addCustomChart(new Metrics.SimplePie("command_log", () -> !Configuration.instance().commandLog.channelID.equals("0") ? "Enabled" : "Disabled"));
+        if(!Configuration.instance().general.botToken.equals("INSERT BOT TOKEN HERE")) { //Prevent events when token not set
+            pm.registerEvents(new SpigotEventListener(), this);
+            if (pm.getPlugin("Votifier") != null) {
+                pm.registerEvents(new VotifierEventListener(), this);
+            }
+            if (pm.getPlugin("dynmap") != null) {
+                org.dynmap.DynmapCommonAPIListener.register(dynmapListener = new DynmapListener(true));
+                pm.registerEvents(new DynmapWorkaroundListener(), this);
+            }
+            final PluginCommand cmd = getServer().getPluginCommand("discord");
+            cmd.setExecutor(new McDiscordCommand());
+            cmd.setTabCompleter(new McDiscordCommand.TabCompleter());
 
+            bstats.addCustomChart(new Metrics.SimplePie("webhook_mode", () -> Configuration.instance().webhook.enable ? "Enabled" : "Disabled"));
+            bstats.addCustomChart(new Metrics.SimplePie("command_log", () -> !Configuration.instance().commandLog.channelID.equals("0") ? "Enabled" : "Disabled"));
+        }
 
         //Run only after server is started
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
