@@ -17,6 +17,7 @@ buildscript {
 }
 plugins {
     id 'java'
+    id "com.github.breadmoirai.github-release" version "2.2.12"
     id 'net.minecrell.plugin-yml.bukkit' version '0.3.0'
 }
 apply plugin: 'com.github.johnrengelman.shadow'
@@ -99,7 +100,7 @@ repositories{
 dependencies{
 
     // =========  Common  =====================
-    embed 'de.erdbeerbaerlp:DiscordIntegration-Core:23c9dd1'
+    embed 'de.erdbeerbaerlp:DiscordIntegration-Core:f8762f79a7'
 
 
     // ============= Spigot =============
@@ -125,4 +126,19 @@ dependencies{
 //Manifest attributes
 jar {
     classifier = "1.16"
+}
+
+githubRelease {
+    token  getProperty("github.token") // This is your personal access token with Repo permissions
+    // You get this from your user settings > developer settings > Personal Access Tokens
+    owner "erdbeerbaerlp" // default is the last part of your group. Eg group: "com.github.breadmoirai" => owner: "breadmoirai"
+    repo "DiscordIntegration-Spigot" // by default this is set to your project name
+    tagName "v${project.version}" // by default this is set to "v${project.version}"
+    targetCommitish "master" // by default this is set to "master"
+    releaseName "v${project.version}" // Release title, by default this is the same as the tagName
+    prerelease false // by default this is false
+    releaseAssets shadowJar // this points to which files you want to upload as assets with your release
+
+    dryRun false // by default false; you can use this to see what actions would be taken without making a release
+    apiEndpoint "https://api.github.com" // should only change for github enterprise users
 }

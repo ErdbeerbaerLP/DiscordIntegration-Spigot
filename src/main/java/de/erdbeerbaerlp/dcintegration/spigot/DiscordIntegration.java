@@ -132,7 +132,7 @@ public class DiscordIntegration extends JavaPlugin {
             if (discord_instance.getJDA() != null && !Configuration.instance().localization.serverStarting.isEmpty()) {
                 Thread.sleep(5000); //Wait for it to cache the channels (hopefully this fixes channel retrieving issues)
                 if (discord_instance.getChannel() != null)
-                    startingMsg = discord_instance.sendMessageReturns(Configuration.instance().localization.serverStarting);
+                    startingMsg = discord_instance.sendMessageReturns(Configuration.instance().localization.serverStarting, discord_instance.getChannel(Configuration.instance().advanced.serverChannelID));
             }
 
             if (getServer().getPluginManager().getPlugin("floodgate-bukkit") != null && Configuration.instance().linking.whitelistMode)
