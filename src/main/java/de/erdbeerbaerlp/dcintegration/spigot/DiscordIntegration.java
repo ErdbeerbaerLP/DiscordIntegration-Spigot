@@ -23,6 +23,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.dynmap.DynmapCommonAPIListener;
 
 import java.io.File;
 import java.io.FileReader;
@@ -46,7 +47,7 @@ public class DiscordIntegration extends JavaPlugin {
      * Used to detect plugin reloads in onEnable
      */
     private boolean active = false;
-    public DynmapListener dynmapListener;
+    public Object dynmapListener;
 
     @Override
     public void onLoad() {
@@ -152,7 +153,7 @@ public class DiscordIntegration extends JavaPlugin {
                 pm.registerEvents(new VotifierEventListener(), this);
             }
             if (pm.getPlugin("dynmap") != null) {
-                org.dynmap.DynmapCommonAPIListener.register(dynmapListener = new DynmapListener(true));
+                org.dynmap.DynmapCommonAPIListener.register((DynmapCommonAPIListener) (dynmapListener = new DynmapListener(true)));
                 pm.registerEvents(new DynmapWorkaroundListener(), this);
             }
             final PluginCommand cmd = getServer().getPluginCommand("discord");
@@ -203,7 +204,7 @@ public class DiscordIntegration extends JavaPlugin {
             discord_instance.sendMessage(Configuration.instance().localization.serverStopped);
             discord_instance.kill(false);
             if (getServer().getPluginManager().getPlugin("dynmap") != null && dynmapListener != null) {
-                org.dynmap.DynmapCommonAPIListener.unregister(dynmapListener);
+                org.dynmap.DynmapCommonAPIListener.unregister((DynmapCommonAPIListener) dynmapListener);
             }
         }
         HandlerList.unregisterAll(this);

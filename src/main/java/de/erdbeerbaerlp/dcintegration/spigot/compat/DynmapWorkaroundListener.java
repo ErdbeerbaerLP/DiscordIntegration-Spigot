@@ -1,9 +1,11 @@
 package de.erdbeerbaerlp.dcintegration.spigot.compat;
 
+import de.erdbeerbaerlp.dcintegration.common.compat.DynmapListener;
 import de.erdbeerbaerlp.dcintegration.spigot.DiscordIntegration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.dynmap.DynmapCommonAPIListener;
 import org.dynmap.DynmapWebChatEvent;
 
 public class DynmapWorkaroundListener implements Listener {
@@ -13,6 +15,6 @@ public class DynmapWorkaroundListener implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onWebChat(DynmapWebChatEvent ev){
-        DiscordIntegration.INSTANCE.dynmapListener.sendMessage(ev.getName(),ev.getMessage());
+        ((DynmapListener)DiscordIntegration.INSTANCE.dynmapListener).sendMessage(ev.getName(),ev.getMessage());
     }
 }
