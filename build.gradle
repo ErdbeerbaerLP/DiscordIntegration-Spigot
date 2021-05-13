@@ -17,7 +17,6 @@ buildscript {
 }
 plugins {
     id 'java'
-    id "com.matthewprenger.cursegradle" version "1.4.0"
     id "com.github.breadmoirai.github-release" version "2.2.12"
     id 'net.minecrell.plugin-yml.bukkit' version '0.3.0'
 }
@@ -101,7 +100,7 @@ repositories{
 dependencies{
 
     // =========  Common  =====================
-    embed 'de.erdbeerbaerlp:DiscordIntegration-Core:7f9bc47284'
+    embed 'de.erdbeerbaerlp:DiscordIntegration-Core:c68715a546'
 
 
     // ============= Spigot =============
@@ -127,20 +126,4 @@ dependencies{
 //Manifest attributes
 jar {
     classifier = "1.16"
-}
-
-//Curseforge publishing
-curseforge {
-    if (project.hasProperty('curseforge.apikey')) { // $GRADLE_USER_HOME/gradle.properties
-        apiKey = getProperty("curseforge.apikey")
-        project {
-            id = '440292'
-            changelog = project.changelog
-            releaseType = 'release'
-            addGameVersion '1.16'
-            mainArtifact(jar) {
-                displayName = "DiscordIntegration-Spigot $version (MC 1.16)"
-            }
-        }
-    }
 }
