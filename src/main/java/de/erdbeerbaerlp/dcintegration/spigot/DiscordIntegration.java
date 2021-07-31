@@ -118,9 +118,8 @@ public class DiscordIntegration extends JavaPlugin {
 
         //Load Discord Integration
 
-
-        CommandRegistry.registerDefaultCommandsFromConfig();
         discord_instance = new Discord(new SpigotServerInterface());
+        CommandRegistry.registerDefaultCommandsFromConfig();
         active = true;
 
         try {

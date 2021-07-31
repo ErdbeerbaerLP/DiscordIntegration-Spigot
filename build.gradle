@@ -24,7 +24,7 @@ plugins {
 apply plugin: "com.matthewprenger.cursegradle"
 apply plugin: 'com.github.johnrengelman.shadow'
 
-version = "2.2.0"
+version = "2.3.1"
 group = "de.erdbeerbaerlp.dcintegration"
 archivesBaseName = "dcintegration-spigot"
 
@@ -136,8 +136,8 @@ curseforge {
         project {
             id = '440292'
             changelog = project.changelog
-            releaseType = 'alpha'
-            addGameVersion("1.16")
+            releaseType = 'beta'
+            addGameVersion("1.17")
             mainArtifact(jar) {
                 displayName = "Gradle-TestRelease"
             }
