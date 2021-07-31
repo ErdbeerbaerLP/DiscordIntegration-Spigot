@@ -1,8 +1,6 @@
 buildscript {
     repositories {
-        jcenter()
         mavenCentral()
-        maven { url = "http://files.minecraftforge.net/maven" }
         maven { url 'https://jitpack.io' }
         repositories {
             maven {
@@ -36,7 +34,7 @@ compileJava {
 //ShadowJar
 configurations {
     embed
-    compile.extendsFrom(embed)
+    compileOnly.extendsFrom(embed)
 }
 shadowJar {
     classifier = '1.17'
@@ -93,15 +91,11 @@ repositories{
     maven { url "https://repository.dev.gotan.io/repository/gotan.os/" }
     maven { url "https://repo.opencollab.dev/maven-snapshots" }
     maven { url "https://repo.opencollab.dev/maven-releases" }
-    maven{
-        name = 'howaner'
-        url = "http://repo.howaner.de/"
-    }
 }
 dependencies{
 
     // =========  Common  =====================
-    embed 'de.erdbeerbaerlp:DiscordIntegration-Core:d26a3d2ea4'
+    embed 'de.erdbeerbaerlp:DiscordIntegration-Core:java16-SNAPSHOT'
 
 
     // ============= Spigot =============
@@ -109,7 +103,7 @@ dependencies{
 
 
     //Votifier
-    compileOnly('com.vexsoftware:votifier:1.9'){
+    compileOnly('com.github.vexsoftware:votifier:v1.9'){
         transitive = false
     }
 
