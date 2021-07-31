@@ -8,13 +8,12 @@ import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
 import de.erdbeerbaerlp.dcintegration.common.util.ServerInterface;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import de.erdbeerbaerlp.dcintegration.spigot.DiscordIntegration;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageReaction;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.requests.RestAction;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -70,8 +69,10 @@ public class SpigotServerInterface extends ServerInterface {
     }
 
     @Override
-    public void runMcCommand(String cmd, MessageReceivedEvent msgEvent) {
-        Bukkit.getScheduler().runTask(DiscordIntegration.INSTANCE, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd));
+    public void runMcCommand(String cmd, MessageChannel channel, User sender) {
+        Bukkit.getScheduler().runTask(DiscordIntegration.INSTANCE, () -> {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+        });
     }
 
     @Override

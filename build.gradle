@@ -3,7 +3,7 @@ buildscript {
         jcenter()
         mavenCentral()
         maven { url = "http://files.minecraftforge.net/maven" }
-
+        maven { url 'https://jitpack.io' }
         repositories {
             maven {
                 url "https://plugins.gradle.org/m2/"
@@ -13,6 +13,7 @@ buildscript {
     }
     dependencies {
         classpath "com.github.jengelman.gradle.plugins:shadow:4.0.4"
+        classpath 'com.github.MMD-Forks:CurseGradle:693e9a980c' //Modified CurseGradle to work with dev.bukkit.org
     }
 }
 plugins {
@@ -20,6 +21,7 @@ plugins {
     id "com.github.breadmoirai.github-release" version "2.2.12"
     id 'net.minecrell.plugin-yml.bukkit' version '0.4.0'
 }
+apply plugin: "com.matthewprenger.cursegradle"
 apply plugin: 'com.github.johnrengelman.shadow'
 
 version = "2.2.0"
@@ -37,7 +39,7 @@ configurations {
     compile.extendsFrom(embed)
 }
 shadowJar {
-    classifier = '1.16'
+    classifier = '1.17'
     configurations = [project.configurations.embed]
 }
 artifacts {
@@ -49,7 +51,7 @@ bukkit {
     name = "DiscordIntegration"
     main = "de.erdbeerbaerlp.dcintegration.spigot.DiscordIntegration"
     author = "ErdbeerbaerLP"
-    apiVersion = "1.16"
+    apiVersion = "1.17"
     version = project.version
     website = "https://spigotmc.org/resources/discordintegration.87196/"
     commands {
@@ -73,7 +75,6 @@ bukkit {
 
 
 repositories{
-    jcenter()
     maven {
         name = 'sonatype-oss'
         url = 'https://oss.sonatype.org/content/repositories/snapshots/'
@@ -100,7 +101,7 @@ repositories{
 dependencies{
 
     // =========  Common  =====================
-    embed 'de.erdbeerbaerlp:DiscordIntegration-Core:c68715a546'
+    embed 'de.erdbeerbaerlp:DiscordIntegration-Core:d26a3d2ea4'
 
 
     // ============= Spigot =============
@@ -125,5 +126,26 @@ dependencies{
 }
 //Manifest attributes
 jar {
-    classifier = "1.16"
+    classifier = "1.17"
+}
+
+//Curseforge publishing
+curseforge {
+    if (project.hasProperty('curseforge.apikey')) { // $GRADLE_USER_HOME/gradle.properties
+        apiKey = getProperty("curseforge.apikey")
+        project {
+            id = '440292'
+            changelog = project.changelog
+            releaseType = 'alpha'
+            addGameVersion("1.16")
+            mainArtifact(jar) {
+                displayName = "Gradle-TestRelease"
+            }
+        }
+        options{
+            bukkitIntegration = true
+            javaVersionAutoDetect = false
+            javaIntegration = true
+        }
+    }
 }

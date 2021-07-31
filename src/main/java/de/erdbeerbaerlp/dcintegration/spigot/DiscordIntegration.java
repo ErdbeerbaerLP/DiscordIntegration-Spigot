@@ -188,7 +188,7 @@ public class DiscordIntegration extends JavaPlugin {
             if (discord_instance != null) {
                 discord_instance.startThreads();
             }
-            UpdateChecker.runUpdateCheck();
+            UpdateChecker.runUpdateCheck("https://raw.githubusercontent.com/ErdbeerbaerLP/DiscordIntegration-Spigot/master/update_checker.json");
         }, 30);
     }
 
