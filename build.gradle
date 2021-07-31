@@ -113,7 +113,7 @@ dependencies{
     }
 
     //Dynmap-Bukkit for workaround
-    compileOnly('com.github.webbukkit.dynmap:dynmap-api:3.1-beta-7'){
+    compileOnly('com.github.webbukkit.dynmap:dynmap-api:v3.1'){
         transitive = false
     }
 
