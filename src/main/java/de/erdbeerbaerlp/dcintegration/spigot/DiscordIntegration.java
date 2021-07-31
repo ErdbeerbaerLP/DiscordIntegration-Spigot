@@ -119,7 +119,6 @@ public class DiscordIntegration extends JavaPlugin {
         //Load Discord Integration
 
         discord_instance = new Discord(new SpigotServerInterface());
-        CommandRegistry.registerDefaultCommandsFromConfig();
         active = true;
 
         try {
@@ -135,6 +134,7 @@ public class DiscordIntegration extends JavaPlugin {
                     startingMsg = discord_instance.sendMessageReturns(Configuration.instance().localization.serverStarting, discord_instance.getChannel(Configuration.instance().advanced.serverChannelID));
             }
 
+            CommandRegistry.registerDefaultCommandsFromConfig();
             if (getServer().getPluginManager().getPlugin("floodgate-bukkit") != null && Configuration.instance().linking.whitelistMode)
                 CommandRegistry.registerCommand(new FloodgateWhitelistCommand());
         } catch (InterruptedException | NullPointerException ignored) {
