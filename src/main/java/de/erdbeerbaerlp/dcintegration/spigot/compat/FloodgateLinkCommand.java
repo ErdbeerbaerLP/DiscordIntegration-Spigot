@@ -23,7 +23,7 @@ public class FloodgateLinkCommand {
                     return true;
                 }
                 final int r = Variables.discord_instance.genBedrockLinkNumber(p.getUniqueId());
-                p.spigot().sendMessage(SpigotMessageUtils.adventureToSpigot(Component.text(Configuration.instance().localization.linking.linkMsgIngame.replace("%num%", r + "").replace("%prefix%", Configuration.instance().commands.prefix)).style(Style.style(TextColors.of(Color.ORANGE)))));
+                p.spigot().sendMessage(SpigotMessageUtils.adventureToSpigot(Component.text(Configuration.instance().localization.linking.linkMsgIngame.replace("%num%", r + "").replace("%prefix%", Configuration.instance().commands.dmPrefix)).style(Style.style(TextColors.of(Color.ORANGE)))));
                 return true;
             }
         }
