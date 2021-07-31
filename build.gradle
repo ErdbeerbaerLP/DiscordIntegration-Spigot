@@ -18,7 +18,7 @@ buildscript {
 plugins {
     id 'java'
     id "com.github.breadmoirai.github-release" version "2.2.12"
-    id 'net.minecrell.plugin-yml.bukkit' version '0.3.0'
+    id 'net.minecrell.plugin-yml.bukkit' version '0.4.0'
 }
 apply plugin: 'com.github.johnrengelman.shadow'
 
@@ -104,7 +104,7 @@ dependencies{
 
 
     // ============= Spigot =============
-    compileOnly 'org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot-api:1.17.1-R0.1-SNAPSHOT'
 
 
     //Votifier
@@ -113,7 +113,7 @@ dependencies{
     }
 
     //Dynmap-Bukkit for workaround
-    compileOnly('com.github.webbukkit.dynmap:dynmap-api:3.1-beta-7'){
+    compileOnly('com.github.webbukkit.dynmap:dynmap-api:v3.1'){
         transitive = false
     }
 
