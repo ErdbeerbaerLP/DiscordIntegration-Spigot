@@ -1,11 +1,13 @@
 package de.erdbeerbaerlp.dcintegration.spigot.compat;
 
+import dcshadow.javax.annotation.Nonnull;
 import de.erdbeerbaerlp.dcintegration.common.Discord;
 import de.erdbeerbaerlp.dcintegration.common.discordCommands.inDMs.DMCommand;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
@@ -36,9 +38,9 @@ public class FloodgateWhitelistCommand extends DMCommand {
     }
 
     @Override
-    public void execute(String[] args, MessageReceivedEvent ev) {
-        if (discord_instance.getChannel().getGuild().isMember(ev.getAuthor())) {
-            Member m = discord_instance.getChannel().getGuild().getMember(ev.getAuthor());
+    public void execute(@Nonnull String[] args, @Nonnull final MessageChannel channel, User sender) {
+        if (discord_instance.getChannel().getGuild().isMember(sender)) {
+            Member m = discord_instance.getChannel().getGuild().getMember(sender);
             if (Configuration.instance().linking.requiredRoles.length != 0) {
                 AtomicBoolean ok = new AtomicBoolean(false);
                 m.getRoles().forEach((role) -> {
@@ -47,24 +49,24 @@ public class FloodgateWhitelistCommand extends DMCommand {
                     }
                 });
                 if (!ok.get()) {
-                    ev.getChannel().sendMessage(Configuration.instance().localization.linking.link_requiredRole).queue();
+                    channel.sendMessage(Configuration.instance().localization.linking.link_requiredRole).queue();
                     return;
                 }
             }
         } else {
-            ev.getChannel().sendMessage(Configuration.instance().localization.linking.link_notMember).queue();
+           channel.sendMessage(Configuration.instance().localization.linking.link_notMember).queue();
             return;
         }
-        if (PlayerLinkController.isDiscordLinkedBedrock(ev.getAuthor().getId())) {
-            ev.getChannel().sendMessage(Configuration.instance().localization.linking.alreadyLinked.replace("%player%", MessageUtils.getNameFromUUID(PlayerLinkController.getPlayerFromDiscord(ev.getAuthor().getId())))).queue();
+        if (PlayerLinkController.isDiscordLinkedBedrock(sender.getId())) {
+            channel.sendMessage(Configuration.instance().localization.linking.alreadyLinked.replace("%player%", MessageUtils.getNameFromUUID(PlayerLinkController.getPlayerFromDiscord(sender.getId())))).queue();
             return;
         }
         if (args.length > 1) {
-            ev.getChannel().sendMessage(Configuration.instance().localization.commands.tooManyArguments).queue();
+            channel.sendMessage(Configuration.instance().localization.commands.tooManyArguments).queue();
             return;
         }
         if (args.length < 1) {
-            ev.getChannel().sendMessage(Configuration.instance().localization.commands.notEnoughArguments).queue();
+            channel.sendMessage(Configuration.instance().localization.commands.notEnoughArguments).queue();
             return;
         }
         UUID u;
@@ -84,13 +86,13 @@ public class FloodgateWhitelistCommand extends DMCommand {
                 u = Discord.dummyUUID;
                 ex.printStackTrace();
             }
-            final boolean linked = PlayerLinkController.linkBedrockPlayer(ev.getAuthor().getId(), u);
+            final boolean linked = PlayerLinkController.linkBedrockPlayer(sender.getId(), u);
             if (linked)
-                ev.getChannel().sendMessage(Configuration.instance().localization.linking.linkSuccessful.replace("%prefix%", Configuration.instance().commands.prefix).replace("%player%", name)).queue();
+                channel.sendMessage(Configuration.instance().localization.linking.linkSuccessful.replace("%prefix%", Configuration.instance().commands.dmPrefix).replace("%player%", name)).queue();
             else
-                ev.getChannel().sendMessage(Configuration.instance().localization.linking.linkFailed).queue();
+                channel.sendMessage(Configuration.instance().localization.linking.linkFailed).queue();
         } catch (IllegalArgumentException e) {
-            ev.getChannel().sendMessage(Configuration.instance().localization.linking.link_argumentNotUUID.replace("%prefix%", Configuration.instance().commands.prefix).replace("%arg%", name)).queue();
+            channel.sendMessage(Configuration.instance().localization.linking.link_argumentNotUUID.replace("%prefix%", Configuration.instance().commands.dmPrefix).replace("%arg%", name)).queue();
         }
     }
 
