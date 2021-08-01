@@ -35,7 +35,7 @@ public class SpigotEventListener implements Listener {
         if (Configuration.instance().linking.whitelistMode && discord_instance.srv.isOnlineMode()) {
             try {
                 if (!PlayerLinkController.isPlayerLinked(ev.getPlayer().getUniqueId())) {
-                    ev.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, Configuration.instance().localization.linking.notWhitelisted);
+                    ev.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, Configuration.instance().localization.linking.notWhitelistedCode.replace("%code%",""+Variables.discord_instance.genLinkNumber(ev.getPlayer().getUniqueId())));
                 }
             } catch (IllegalStateException e) {
                 ev.disallow(PlayerLoginEvent.Result.KICK_OTHER, "Please check " + Variables.discordDataDir + "LinkedPlayers.json\n\n" + e.toString());

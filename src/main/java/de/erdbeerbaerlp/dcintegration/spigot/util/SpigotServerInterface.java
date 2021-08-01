@@ -9,14 +9,14 @@ import de.erdbeerbaerlp.dcintegration.common.util.ServerInterface;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import de.erdbeerbaerlp.dcintegration.spigot.DiscordIntegration;
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.requests.RestAction;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class SpigotServerInterface extends ServerInterface {
     @Override
@@ -69,7 +69,8 @@ public class SpigotServerInterface extends ServerInterface {
     }
 
     @Override
-    public void runMcCommand(String cmd, MessageChannel channel, User sender) {
+    public void runMcCommand(String cmd, final CompletableFuture<InteractionHook> cmdMsg, User sender) {
+        cmdMsg.thenAccept((msg)->msg.editOriginal(Configuration.instance().localization.commands.executing).queue());
         Bukkit.getScheduler().runTask(DiscordIntegration.INSTANCE, () -> {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
         });

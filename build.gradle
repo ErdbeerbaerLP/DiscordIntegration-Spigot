@@ -22,7 +22,7 @@ plugins {
 apply plugin: "com.matthewprenger.cursegradle"
 apply plugin: 'com.github.johnrengelman.shadow'
 
-version = "2.3.1"
+version = "2.3.2"
 group = "de.erdbeerbaerlp.dcintegration"
 archivesBaseName = "dcintegration-spigot"
 
@@ -95,7 +95,7 @@ repositories{
 dependencies{
 
     // =========  Common  =====================
-    embed 'de.erdbeerbaerlp:DiscordIntegration-Core:java16-SNAPSHOT'
+    embed 'de.erdbeerbaerlp:DiscordIntegration-Core:dd4cc9b5db'
 
 
     // ============= Spigot =============
