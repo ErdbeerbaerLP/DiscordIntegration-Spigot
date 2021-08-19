@@ -11,7 +11,7 @@ import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.util.TextColors;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
-import de.erdbeerbaerlp.dcintegration.spigot.compat.FloodgateLinkCommand;
+import de.erdbeerbaerlp.dcintegration.spigot.compat.FloodgateUtils;
 import de.erdbeerbaerlp.dcintegration.spigot.util.SpigotMessageUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -36,7 +36,7 @@ public class McDiscordCommand implements CommandExecutor {
             switch (args[0].toLowerCase()) {
                 case "link":
                     if (sender.getServer().getPluginManager().getPlugin("floodgate-bukkit") != null) {
-                        if (FloodgateLinkCommand.link(p)) break;
+                        if (FloodgateUtils.linkCommand(p)) break;
                     }
                     if (Configuration.instance().linking.enableLinking && Variables.discord_instance.srv.isOnlineMode() && !Configuration.instance().linking.whitelistMode) {
                         if (PlayerLinkController.isPlayerLinked(p.getUniqueId())) {
@@ -44,7 +44,7 @@ public class McDiscordCommand implements CommandExecutor {
                             break;
                         }
                         final int r = Variables.discord_instance.genLinkNumber(p.getUniqueId());
-                        p.spigot().sendMessage(SpigotMessageUtils.adventureToSpigot(Component.text(Configuration.instance().localization.linking.linkMsgIngame.replace("%num%", r + "").replace("%prefix%", Configuration.instance().commands.dmPrefix)).style(Style.style(TextColors.of(Color.ORANGE)).clickEvent(ClickEvent.copyToClipboard(Configuration.instance().commands.dmPrefix + "link " + r)).hoverEvent(HoverEvent.showText(Component.text(Configuration.instance().localization.linking.hoverMsg_copyClipboard))))));
+                        p.spigot().sendMessage(SpigotMessageUtils.adventureToSpigot(Component.text(Configuration.instance().localization.linking.linkMsgIngame.replace("%num%", r + "").replace("%prefix%", "/")).style(Style.style(TextColors.of(Color.ORANGE)).clickEvent(ClickEvent.copyToClipboard("" + r)).hoverEvent(HoverEvent.showText(Component.text(Configuration.instance().localization.linking.hoverMsg_copyClipboard))))));
                     } else {
                         p.spigot().sendMessage(SpigotMessageUtils.adventureToSpigot(Component.text(Configuration.instance().localization.commands.subcommandDisabled).style(Style.style(TextColors.of(Color.RED)))));
                     }

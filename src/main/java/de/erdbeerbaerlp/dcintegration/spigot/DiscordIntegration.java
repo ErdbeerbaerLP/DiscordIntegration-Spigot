@@ -14,7 +14,6 @@ import de.erdbeerbaerlp.dcintegration.common.util.UpdateChecker;
 import de.erdbeerbaerlp.dcintegration.spigot.bstats.Metrics;
 import de.erdbeerbaerlp.dcintegration.spigot.command.McDiscordCommand;
 import de.erdbeerbaerlp.dcintegration.spigot.compat.DynmapWorkaroundListener;
-import de.erdbeerbaerlp.dcintegration.spigot.compat.FloodgateWhitelistCommand;
 import de.erdbeerbaerlp.dcintegration.spigot.compat.VotifierEventListener;
 import de.erdbeerbaerlp.dcintegration.spigot.util.SpigotServerInterface;
 import org.bukkit.command.PluginCommand;
@@ -135,8 +134,7 @@ public class DiscordIntegration extends JavaPlugin {
             }
 
             CommandRegistry.registerDefaultCommandsFromConfig();
-            if (getServer().getPluginManager().getPlugin("floodgate-bukkit") != null && Configuration.instance().linking.whitelistMode)
-                CommandRegistry.registerCommand(new FloodgateWhitelistCommand());
+
         } catch (InterruptedException | NullPointerException ignored) {
         }
     }

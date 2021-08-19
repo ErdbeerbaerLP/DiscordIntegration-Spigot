@@ -7,6 +7,7 @@ import de.erdbeerbaerlp.dcintegration.common.util.DiscordMessage;
 import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import de.erdbeerbaerlp.dcintegration.spigot.api.SpigotDiscordEventHandler;
+import de.erdbeerbaerlp.dcintegration.spigot.compat.FloodgateUtils;
 import de.erdbeerbaerlp.dcintegration.spigot.util.SpigotMessageUtils;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -35,7 +36,7 @@ public class SpigotEventListener implements Listener {
         if (Configuration.instance().linking.whitelistMode && discord_instance.srv.isOnlineMode()) {
             try {
                 if (!PlayerLinkController.isPlayerLinked(ev.getPlayer().getUniqueId())) {
-                    ev.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, Configuration.instance().localization.linking.notWhitelistedCode.replace("%code%",""+Variables.discord_instance.genLinkNumber(ev.getPlayer().getUniqueId())));
+                    ev.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, Configuration.instance().localization.linking.notWhitelistedCode.replace("%code%", "" + (FloodgateUtils.isBedrockPlayer(ev.getPlayer()) ? Variables.discord_instance.genBedrockLinkNumber(ev.getPlayer().getUniqueId()) : Variables.discord_instance.genLinkNumber(ev.getPlayer().getUniqueId()))));
                 }
             } catch (IllegalStateException e) {
                 ev.disallow(PlayerLoginEvent.Result.KICK_OTHER, "Please check " + Variables.discordDataDir + "LinkedPlayers.json\n\n" + e.toString());

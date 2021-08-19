@@ -22,7 +22,7 @@ plugins {
 apply plugin: "com.matthewprenger.cursegradle"
 apply plugin: 'com.github.johnrengelman.shadow'
 
-version = "2.3.2"
+version = "2.3.3"
 group = "de.erdbeerbaerlp.dcintegration"
 archivesBaseName = "dcintegration-spigot"
 
@@ -49,7 +49,7 @@ bukkit {
     name = "DiscordIntegration"
     main = "de.erdbeerbaerlp.dcintegration.spigot.DiscordIntegration"
     author = "ErdbeerbaerLP"
-    apiVersion = "1.17"
+    apiVersion = "1.13"
     version = project.version
     website = "https://spigotmc.org/resources/discordintegration.87196/"
     commands {
@@ -95,7 +95,7 @@ repositories{
 dependencies{
 
     // =========  Common  =====================
-    embed 'de.erdbeerbaerlp:DiscordIntegration-Core:dd4cc9b5db'
+    embed 'de.erdbeerbaerlp:DiscordIntegration-Core:6863515f'
 
 
     // ============= Spigot =============
@@ -113,7 +113,7 @@ dependencies{
     }
 
     //Floodgate
-    compileOnly('org.geysermc:floodgate-bukkit:1.0-SNAPSHOT')
+    compileOnly('org.geysermc.floodgate:api:2.0-SNAPSHOT')
 
     //Dynmap-API
     compileOnly('com.github.webbukkit:DynmapCoreAPI:2.5')

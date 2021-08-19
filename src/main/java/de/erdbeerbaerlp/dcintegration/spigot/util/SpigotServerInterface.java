@@ -86,8 +86,11 @@ public class SpigotServerInterface extends ServerInterface {
     }
 
     @Override
-    public void sendMCMessage(String msg, UUID player) {
-        Bukkit.getPlayer(player).sendMessage(msg);
+    public void sendMCMessage(String msg, UUID uuid) {
+        if(uuid == null) return;
+        final Player player = Bukkit.getPlayer(uuid);
+        if(player == null) return;
+        player.sendMessage(msg);
     }
 
     @Override
