@@ -66,55 +66,55 @@ public class DiscordIntegration extends JavaPlugin {
         if (!discordDataDir.exists()) discordDataDir.mkdir();
         Configuration.instance().loadConfig();
 
+        if(Configuration.instance().general.allowConfigMigration) {
+            //Migrate configs from DiscordSRV, if available
+            final File discordSrvDir = new File("./plugins/DiscordSRV/");
+            if (discordSrvDir.exists()) {
+                final File dsrvConfig = new File(discordSrvDir, "config.yml");
+                if (dsrvConfig.exists()) {
+                    System.out.println("Found DiscordSRV Config, attempting to migrate!");
+                    final Gson gson = new Gson();
+                    final YamlConfiguration cfg = YamlConfiguration.loadConfiguration(dsrvConfig);
+                    final Configuration conf = Configuration.instance();
+                    conf.general.botToken = cfg.getString("BotToken", conf.general.botToken);
+                    ConfigurationSection channels = cfg.getConfigurationSection("Channels");
+                    conf.general.botChannel = channels.get("global") == null ? conf.advanced.deathsChannelID : channels.getString("global");
+                    conf.advanced.deathsChannelID = channels.get("deaths") == null ? conf.advanced.deathsChannelID : channels.getString("deaths");
+                    conf.commandLog.channelID = cfg.getString("DiscordConsoleChannelId", conf.commandLog.channelID);
+                    if (conf.commandLog.channelID.equals("000000000000000000")) conf.commandLog.channelID = "0";
+                    conf.webhook.enable = cfg.getBoolean("Experiment_WebhookChatMessageDelivery", conf.webhook.enable);
+                    if (!cfg.getStringList("DiscordGameStatus").isEmpty())
+                        conf.general.botStatusName = cfg.getStringList("DiscordGameStatus").get(0);
+                    else if (cfg.getString("DiscordGameStatus") != null)
+                        conf.general.botStatusName = cfg.getString("DiscordGameStatus");
+                    conf.saveConfig();
+                    System.out.println("Migrated " + dsrvConfig.getPath());
+                    final File linkedPlayers = new File(discordSrvDir, "linkedaccounts.json");
+                    if (linkedPlayers.exists()) {
+                        try {
+                            final JsonReader r = new JsonReader(new FileReader(linkedPlayers));
+                            final JsonObject object = gson.fromJson(r, JsonObject.class);
+                            object.entrySet().forEach((e) -> PlayerLinkController.migrateLinkPlayer(e.getKey(), UUID.fromString(e.getValue().getAsString())));
+                            r.close();
+                            System.out.println("Migrated " + linkedPlayers.getPath());
+                        } catch (IOException e) {
+                            System.out.println("Failed to migrate " + linkedPlayers.getPath());
+                            e.printStackTrace();
+                        }
+                    }
+                    System.out.println("Migration done! Renaming DiscordSRV's config directory...");
+                    File backupDir = new File("./plugins/DiscordSRV_" + System.nanoTime() + "/");
 
-        //Migrate configs from DiscordSRV, if available
-        final File discordSrvDir = new File("./plugins/DiscordSRV/");
-        if (discordSrvDir.exists()) {
-            final File dsrvConfig = new File(discordSrvDir, "config.yml");
-            if (dsrvConfig.exists()) {
-                System.out.println("Found DiscordSRV Config, attempting to migrate!");
-                final Gson gson = new Gson();
-                final YamlConfiguration cfg = YamlConfiguration.loadConfiguration(dsrvConfig);
-                final Configuration conf = Configuration.instance();
-                conf.general.botToken = cfg.getString("BotToken", conf.general.botToken);
-                ConfigurationSection channels = cfg.getConfigurationSection("Channels");
-                conf.general.botChannel = channels.get("global") == null ? conf.advanced.deathsChannelID : channels.getString("global");
-                conf.advanced.deathsChannelID = channels.get("deaths") == null ? conf.advanced.deathsChannelID : channels.getString("deaths");
-                conf.commandLog.channelID = cfg.getString("DiscordConsoleChannelId", conf.commandLog.channelID);
-                if(conf.commandLog.channelID.equals("000000000000000000")) conf.commandLog.channelID = "0";
-                conf.webhook.enable = cfg.getBoolean("Experiment_WebhookChatMessageDelivery", conf.webhook.enable);
-                if (!cfg.getStringList("DiscordGameStatus").isEmpty())
-                    conf.general.botStatusName = cfg.getStringList("DiscordGameStatus").get(0);
-                else if (cfg.getString("DiscordGameStatus") != null)
-                    conf.general.botStatusName = cfg.getString("DiscordGameStatus");
-                conf.saveConfig();
-                System.out.println("Migrated " + dsrvConfig.getPath());
-                final File linkedPlayers = new File(discordSrvDir, "linkedaccounts.json");
-                if (linkedPlayers.exists()) {
                     try {
-                        final JsonReader r = new JsonReader(new FileReader(linkedPlayers));
-                        final JsonObject object = gson.fromJson(r, JsonObject.class);
-                        object.entrySet().forEach((e) -> PlayerLinkController.migrateLinkPlayer(e.getKey(), UUID.fromString(e.getValue().getAsString())));
-                        r.close();
-                        System.out.println("Migrated " + linkedPlayers.getPath());
+                        Files.move(discordSrvDir.toPath(), backupDir.toPath());
+                        System.out.println("DONE");
                     } catch (IOException e) {
-                        System.out.println("Failed to migrate " + linkedPlayers.getPath());
+                        System.out.println("Failed. Plugin might migrate again at next startup");
                         e.printStackTrace();
                     }
                 }
-                System.out.println("Migration done! Renaming DiscordSRV's config directory...");
-                File backupDir = new File("./plugins/DiscordSRV_" + System.nanoTime() + "/");
-
-                try {
-                    Files.move(discordSrvDir.toPath(), backupDir.toPath());
-                    System.out.println("DONE");
-                } catch (IOException e) {
-                    System.out.println("Failed. Plugin might migrate again at next startup");
-                    e.printStackTrace();
-                }
             }
         }
-
         //Load Discord Integration
 
         discord_instance = new Discord(new SpigotServerInterface());
