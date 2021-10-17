@@ -8,6 +8,7 @@ import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import de.erdbeerbaerlp.dcintegration.spigot.api.SpigotDiscordEventHandler;
 import de.erdbeerbaerlp.dcintegration.spigot.compat.FloodgateUtils;
+import de.erdbeerbaerlp.dcintegration.spigot.util.AdvancementUtil;
 import de.erdbeerbaerlp.dcintegration.spigot.util.SpigotMessageUtils;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -69,64 +70,18 @@ public class SpigotEventListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onAdvancement(PlayerAdvancementDoneEvent ev) {
+    public void onAdvancement(PlayerAdvancementDoneEvent ev) throws NoSuchFieldException {
         if (discord_instance != null) {
             if (PlayerLinkController.getSettings(null, ev.getPlayer().getUniqueId()).hideFromDiscord) return;
-            try {
-                final Object adv = ev.getAdvancement();
-                final Class<?> test = adv.getClass();
-                final Field h = test.getDeclaredField("handle");
-                h.setAccessible(true);
-                Object handle = h.get(adv);
-                Class<?> handleClass = handle.getClass();
-                final Field d = handleClass.getDeclaredField("display");
-                d.setAccessible(true);
-                Object display = d.get(handle);
-                if (display == null) return;  //Cannot be displayed
-                Class<?> displayClass = display.getClass();
-
-                final Field shouldAnnounceToChat = displayClass.getDeclaredField("g");
-                shouldAnnounceToChat.setAccessible(true);
-                if (!(boolean) shouldAnnounceToChat.get(display)) return;
-
-                final Field titleTxt = displayClass.getDeclaredField("a");
-                titleTxt.setAccessible(true);
-                Object titleTextComp = titleTxt.get(display);
-                Class<?> titleTextCompClass = titleTextComp.getClass();
-
-                final Method getStrTitle = titleTextCompClass.getMethod("getString");
-                getStrTitle.setAccessible(true);
-                String title = (String) getStrTitle.invoke(titleTextComp, new Object[0]);
-
-                final Field descTxt = displayClass.getDeclaredField("b");
-                descTxt.setAccessible(true);
-                Object descTextComp = descTxt.get(display);
-                Class<?> descTextCompClass = descTextComp.getClass();
-
-                final Method getStrDesc = descTextCompClass.getMethod("getString");
-                getStrDesc.setAccessible(true);
-                String description = (String) getStrDesc.invoke(descTextComp, new Object[0]);
-
-                /* //Used for finding the required fields and methods
-                for (Field s : titleTextCompClass.getDeclaredFields()) {
-                    s.setAccessible(true);
-                    System.out.println(s.toString() + " : " + s.get(titleTextComp));
-                }
-                for (Field s : titleTextCompClass.getFields()) {
-                    s.setAccessible(true);
-                    System.out.println(s.toString() + " : " + s.get(titleTextComp));
-                }
-                for (Method m : titleTextCompClass.getMethods()) System.out.println(m.toString());*/
+            final AdvancementUtil.Advancement advancement = AdvancementUtil.getAdvancement(ev);
+            if (advancement != null)
                 discord_instance.sendMessage(Configuration.instance().localization.advancementMessage.replace("%player%",
-                        MessageUtils.removeFormatting(SpigotMessageUtils.formatPlayerName(ev.getPlayer())))
+                                MessageUtils.removeFormatting(SpigotMessageUtils.formatPlayerName(ev.getPlayer())))
                         .replace("%name%",
-                                MessageUtils.removeFormatting(title))
+                                MessageUtils.removeFormatting(advancement.name))
                         .replace("%desc%",
-                                MessageUtils.removeFormatting(description))
+                                MessageUtils.removeFormatting(advancement.description))
                         .replace("\\n", "\n"));
-            } catch (IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
-                e.printStackTrace();
-            }
 
         }
     }

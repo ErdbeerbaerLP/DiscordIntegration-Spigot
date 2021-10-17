@@ -19,6 +19,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,7 +66,12 @@ public class McDiscordCommand implements CommandExecutor {
                     break;
                 case "reload":
                     if (p.hasPermission("dcintegration.admin")) {
-                        Configuration.instance().loadConfig();
+                        try {
+                            Configuration.instance().loadConfig();
+                        } catch (IOException e) {
+                            System.err.println("Config loading failed");
+                            e.printStackTrace();
+                        }
                         AddonLoader.reloadAll();
                         p.spigot().sendMessage(SpigotMessageUtils.adventureToSpigot(Component.text(Configuration.instance().localization.commands.configReloaded)));
                     } else {

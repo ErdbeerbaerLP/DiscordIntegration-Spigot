@@ -26,8 +26,7 @@ public class SpigotMessageUtils extends MessageUtils {
         return ComponentSerializer.parse(GsonComponentSerializer.gson().serialize(comp));
     }
 
-    public static Component spigotToAdventure(final BaseComponent[] comp){
+    public static Component spigotToAdventure(final BaseComponent... comp){
         return GsonComponentSerializer.gson().deserialize(ComponentSerializer.toString(comp));
     }
-
 }

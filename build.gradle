@@ -22,7 +22,7 @@ plugins {
 apply plugin: "com.matthewprenger.cursegradle"
 apply plugin: 'com.github.johnrengelman.shadow'
 
-version = "2.3.3"
+version = "2.3.4"
 group = "de.erdbeerbaerlp.dcintegration"
 archivesBaseName = "dcintegration-spigot"
 
@@ -95,7 +95,7 @@ repositories{
 dependencies{
 
     // =========  Common  =====================
-    embed 'de.erdbeerbaerlp:DiscordIntegration-Core:6863515f'
+    embed 'de.erdbeerbaerlp:DiscordIntegration-Core:882716be'
 
 
     // ============= Spigot =============
@@ -130,7 +130,7 @@ curseforge {
         project {
             id = '440292'
             changelog = project.changelog
-            releaseType = 'beta'
+            releaseType = project.releaseType.toLowerCase()
             addGameVersion("1.17")
             mainArtifact(jar) {
                 displayName = "Gradle-TestRelease"
