@@ -22,7 +22,7 @@ plugins {
 apply plugin: "com.matthewprenger.cursegradle"
 apply plugin: 'com.github.johnrengelman.shadow'
 
-version = "2.3.4"
+version = "2.3.5"
 group = "de.erdbeerbaerlp.dcintegration"
 archivesBaseName = "dcintegration-spigot"
 
@@ -86,16 +86,20 @@ repositories{
         name = 'sonatype'
         url = 'https://oss.sonatype.org/content/groups/public/'
     }
-    maven { url 'https://jitpack.io' }
     maven { url "https://nexus.vankka.dev/repository/maven-public/" }
     maven { url "https://repository.dev.gotan.io/repository/gotan.os/" }
     maven { url "https://repo.opencollab.dev/maven-snapshots" }
-    maven { url "https://repo.opencollab.dev/maven-releases" }
+    maven { url "https://repo.opencollab.dev/maven-releases"  }
+    maven { url 'https://jitpack.io' }
+    flatDir {
+        dirs 'libs'
+    }
 }
 dependencies{
 
     // =========  Common  =====================
-    embed 'de.erdbeerbaerlp:DiscordIntegration-Core:882716be'
+    //embed 'de.ErdbeerbaerLP:DiscordIntegration-Core:bad9b767'
+    embed 'dcintegration-core:dcintegration-core-2.3.5'
 
 
     // ============= Spigot =============
