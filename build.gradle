@@ -117,7 +117,7 @@ dependencies{
     }
 
     //Floodgate
-    compileOnly('org.geysermc.floodgate:api:2.0-SNAPSHOT')
+    compileOnly('org.geysermc.floodgate:api:2.1.1-SNAPSHOT')
 
     //Dynmap-API
     compileOnly('com.github.webbukkit:DynmapCoreAPI:2.5')
