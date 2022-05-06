@@ -9,6 +9,7 @@ import de.erdbeerbaerlp.dcintegration.common.addon.DiscordAddonMeta;
 import de.erdbeerbaerlp.dcintegration.common.compat.DynmapListener;
 import de.erdbeerbaerlp.dcintegration.common.storage.CommandRegistry;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.util.UpdateChecker;
 import de.erdbeerbaerlp.dcintegration.spigot.bstats.Metrics;
@@ -65,7 +66,7 @@ public class DiscordIntegration extends JavaPlugin {
         configFile = new File("./plugins/DiscordIntegration/config.toml");
         if (!discordDataDir.exists()) discordDataDir.mkdir();
         try {
-            Configuration.instance().loadConfig();
+            Discord.loadConfigs();
 
 
             if (Configuration.instance().general.allowConfigMigration) {
@@ -133,10 +134,10 @@ public class DiscordIntegration extends JavaPlugin {
                 if (discord_instance.getJDA() == null) Thread.sleep(1000);
                 else break;
             }
-            if (discord_instance.getJDA() != null && !Configuration.instance().localization.serverStarting.isEmpty()) {
+            if (discord_instance.getJDA() != null && !Localization.instance().serverStarting.isEmpty()) {
                 Thread.sleep(5000); //Wait for it to cache the channels (hopefully this fixes channel retrieving issues)
                 if (discord_instance.getChannel() != null)
-                    startingMsg = discord_instance.sendMessageReturns(Configuration.instance().localization.serverStarting, discord_instance.getChannel(Configuration.instance().advanced.serverChannelID));
+                    startingMsg = discord_instance.sendMessageReturns(Localization.instance().serverStarting, discord_instance.getChannel(Configuration.instance().advanced.serverChannelID));
             }
 
             CommandRegistry.registerDefaultCommandsFromConfig();
@@ -173,8 +174,8 @@ public class DiscordIntegration extends JavaPlugin {
             started = new Date().getTime();
             if (discord_instance != null)
                 if (startingMsg != null) {
-                    startingMsg.thenAccept((a) -> a.editMessage(Configuration.instance().localization.serverStarted).queue());
-                } else discord_instance.sendMessage(Configuration.instance().localization.serverStarted);
+                    startingMsg.thenAccept((a) -> a.editMessage(Localization.instance().serverStarted).queue());
+                } else discord_instance.sendMessage(Localization.instance().serverStarted);
 
             //Add addon stats
             bstats.addCustomChart(new Metrics.DrilldownPie("addons", () -> {
@@ -209,7 +210,7 @@ public class DiscordIntegration extends JavaPlugin {
     public void onDisable() {
         active = false;
         if (discord_instance != null) {
-            discord_instance.sendMessage(Configuration.instance().localization.serverStopped);
+            discord_instance.sendMessage(Localization.instance().serverStopped);
             discord_instance.kill(false);
             if (getServer().getPluginManager().getPlugin("dynmap") != null && dynmapListener != null) {
                 org.dynmap.DynmapCommonAPIListener.unregister((DynmapCommonAPIListener) dynmapListener);

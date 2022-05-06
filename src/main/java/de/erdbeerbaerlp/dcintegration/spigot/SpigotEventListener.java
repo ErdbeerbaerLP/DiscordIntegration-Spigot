@@ -2,6 +2,7 @@ package de.erdbeerbaerlp.dcintegration.spigot;
 
 import dcshadow.org.apache.commons.lang3.ArrayUtils;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.util.DiscordMessage;
 import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
@@ -37,7 +38,9 @@ public class SpigotEventListener implements Listener {
         if (Configuration.instance().linking.whitelistMode && discord_instance.srv.isOnlineMode()) {
             try {
                 if (!PlayerLinkController.isPlayerLinked(ev.getPlayer().getUniqueId())) {
-                    ev.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, Configuration.instance().localization.linking.notWhitelistedCode.replace("%code%", "" + (FloodgateUtils.isBedrockPlayer(ev.getPlayer()) ? Variables.discord_instance.genBedrockLinkNumber(ev.getPlayer().getUniqueId()) : Variables.discord_instance.genLinkNumber(ev.getPlayer().getUniqueId()))));
+                    ev.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, Localization.instance().linking.notWhitelistedCode.replace("%code%", "" + (FloodgateUtils.isBedrockPlayer(ev.getPlayer()) ? Variables.discord_instance.genBedrockLinkNumber(ev.getPlayer().getUniqueId()) : Variables.discord_instance.genLinkNumber(ev.getPlayer().getUniqueId()))));
+                }else if(!Variables.discord_instance.canPlayerJoin(ev.getPlayer().getUniqueId())){
+                    ev.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, Localization.instance().linking.notWhitelistedRole);
                 }
             } catch (IllegalStateException e) {
                 ev.disallow(PlayerLoginEvent.Result.KICK_OTHER, "Please check " + Variables.discordDataDir + "LinkedPlayers.json\n\n" + e.toString());
@@ -49,7 +52,7 @@ public class SpigotEventListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent ev) {
         if (discord_instance != null) {
             if (PlayerLinkController.getSettings(null, ev.getPlayer().getUniqueId()).hideFromDiscord) return;
-            discord_instance.sendMessage(Configuration.instance().localization.playerJoin.replace("%player%", SpigotMessageUtils.formatPlayerName(ev.getPlayer())));
+            discord_instance.sendMessage(Localization.instance().playerJoin.replace("%player%", SpigotMessageUtils.formatPlayerName(ev.getPlayer())));
 
             // Fix link status (if user does not have role, give the role to the user, or vice versa)
             final Thread fixLinkStatus = new Thread(() -> {
@@ -75,7 +78,7 @@ public class SpigotEventListener implements Listener {
             if (PlayerLinkController.getSettings(null, ev.getPlayer().getUniqueId()).hideFromDiscord) return;
             final AdvancementUtil.Advancement advancement = AdvancementUtil.getAdvancement(ev);
             if (advancement != null)
-                discord_instance.sendMessage(Configuration.instance().localization.advancementMessage.replace("%player%",
+                discord_instance.sendMessage(Localization.instance().advancementMessage.replace("%player%",
                                 MessageUtils.removeFormatting(SpigotMessageUtils.formatPlayerName(ev.getPlayer())))
                         .replace("%name%",
                                 MessageUtils.removeFormatting(advancement.name))
@@ -90,9 +93,9 @@ public class SpigotEventListener implements Listener {
     public void onPlayerLeave(PlayerQuitEvent ev) {
         if (PlayerLinkController.getSettings(null, ev.getPlayer().getUniqueId()).hideFromDiscord) return;
         if (discord_instance != null && !timeouts.contains(ev.getPlayer().getUniqueId()))
-            discord_instance.sendMessage(Configuration.instance().localization.playerLeave.replace("%player%", SpigotMessageUtils.formatPlayerName(ev.getPlayer())));
+            discord_instance.sendMessage(Localization.instance().playerLeave.replace("%player%", SpigotMessageUtils.formatPlayerName(ev.getPlayer())));
         else if (discord_instance != null && timeouts.contains(ev.getPlayer().getUniqueId())) {
-            discord_instance.sendMessage(Configuration.instance().localization.playerTimeout.replace("%player%", SpigotMessageUtils.formatPlayerName(ev.getPlayer())));
+            discord_instance.sendMessage(Localization.instance().playerTimeout.replace("%player%", SpigotMessageUtils.formatPlayerName(ev.getPlayer())));
             timeouts.remove(ev.getPlayer().getUniqueId());
         }
     }
@@ -129,7 +132,7 @@ public class SpigotEventListener implements Listener {
         if (discord_instance != null) {
             if (PlayerLinkController.getSettings(null, ev.getEntity().getUniqueId()).hideFromDiscord) return;
             final String deathMessage = ev.getDeathMessage();
-            discord_instance.sendMessage(new DiscordMessage(Configuration.instance().localization.playerDeath.replace("%player%", SpigotMessageUtils.formatPlayerName(ev.getEntity())).replace("%msg%", MessageUtils.removeFormatting(deathMessage).replace(ev.getEntity().getName() + " ", ""))), discord_instance.getChannel(Configuration.instance().advanced.deathsChannelID));
+            discord_instance.sendMessage(new DiscordMessage(Localization.instance().playerDeath.replace("%player%", SpigotMessageUtils.formatPlayerName(ev.getEntity())).replace("%msg%", MessageUtils.removeFormatting(deathMessage).replace(ev.getEntity().getName() + " ", ""))), discord_instance.getChannel(Configuration.instance().advanced.deathsChannelID));
         }
     }
 

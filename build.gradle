@@ -22,22 +22,20 @@ plugins {
 apply plugin: "com.matthewprenger.cursegradle"
 apply plugin: 'com.github.johnrengelman.shadow'
 
-version = "2.3.5"
+version = "2.4.1"
 group = "de.erdbeerbaerlp.dcintegration"
 archivesBaseName = "dcintegration-spigot"
 
 
-sourceCompatibility = targetCompatibility = '1.8'
-compileJava {
-    sourceCompatibility = targetCompatibility = '1.8'
-}
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
 //ShadowJar
 configurations {
     embed
     compileOnly.extendsFrom(embed)
 }
 shadowJar {
-    classifier = '1.17'
+    classifier = '1.18'
     configurations = [project.configurations.embed]
 }
 artifacts {
@@ -49,7 +47,7 @@ bukkit {
     name = "DiscordIntegration"
     main = "de.erdbeerbaerlp.dcintegration.spigot.DiscordIntegration"
     author = "ErdbeerbaerLP"
-    apiVersion = "1.13"
+    apiVersion = "1.18"
     version = project.version
     website = "https://spigotmc.org/resources/discordintegration.87196/"
     commands {
@@ -73,6 +71,7 @@ bukkit {
 
 
 repositories{
+    maven { url 'https://jitpack.io' }
     maven {
         name = 'sonatype-oss'
         url = 'https://oss.sonatype.org/content/repositories/snapshots/'
@@ -90,20 +89,21 @@ repositories{
     maven { url "https://repository.dev.gotan.io/repository/gotan.os/" }
     maven { url "https://repo.opencollab.dev/maven-snapshots" }
     maven { url "https://repo.opencollab.dev/maven-releases"  }
-    maven { url 'https://jitpack.io' }
     flatDir {
         dirs 'libs'
     }
+    maven { url "https://repo.erdbeerbaerlp.de/repository/maven-public/" }
 }
 dependencies{
 
     // =========  Common  =====================
-    //embed 'de.ErdbeerbaerLP:DiscordIntegration-Core:bad9b767'
-    embed 'dcintegration-core:dcintegration-core-2.3.5'
+    embed('de.erdbeerbaerlp:dcintegration.common:2.4.1') {
+        changing = true
+    }
 
 
     // ============= Spigot =============
-    compileOnly 'org.spigotmc:spigot-api:1.18-pre8-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot-api:1.18.2-R0.1-SNAPSHOT'
 
 
     //Votifier
@@ -124,7 +124,7 @@ dependencies{
 }
 //Manifest attributes
 jar {
-    classifier = "1.17"
+    classifier = "1.18"
 }
 
 //Curseforge publishing
@@ -135,7 +135,7 @@ curseforge {
             id = '440292'
             changelog = project.changelog
             releaseType = project.releaseType.toLowerCase()
-            addGameVersion("1.17")
+            addGameVersion("1.18")
             mainArtifact(jar) {
                 displayName = "Gradle-TestRelease"
             }

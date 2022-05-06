@@ -3,6 +3,7 @@ package de.erdbeerbaerlp.dcintegration.spigot.util;
 import dcshadow.net.kyori.adventure.text.Component;
 import dcshadow.org.jetbrains.annotations.NotNull;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.util.ComponentUtils;
 import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
@@ -27,7 +28,7 @@ import javax.lang.model.element.VariableElement;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-public class SpigotServerInterface extends ServerInterface {
+public class SpigotServerInterface implements ServerInterface {
     @Override
     public int getMaxPlayers() {
         return Bukkit.getMaxPlayers();
@@ -66,8 +67,8 @@ public class SpigotServerInterface extends ServerInterface {
         for (final Player p : l) {
             if (p.getUniqueId().equals(targetUUID) && !Variables.discord_instance.ignoringPlayers.contains(p.getUniqueId()) && !PlayerLinkController.getSettings(null, p.getUniqueId()).ignoreDiscordChatIngame && !PlayerLinkController.getSettings(null, p.getUniqueId()).ignoreReactions) {
                 final String emote = reactionEmote.isEmote() ? ":" + reactionEmote.getEmote().getName() + ":" : MessageUtils.formatEmoteMessage(new ArrayList<>(), reactionEmote.getEmoji());
-                String outMsg = Configuration.instance().localization.reactionMessage.replace("%name%", member.getEffectiveName()).replace("%name2%", member.getUser().getAsTag()).replace("%emote%", emote);
-                if (Configuration.instance().localization.reactionMessage.contains("%msg%"))
+                String outMsg = Localization.instance().reactionMessage.replace("%name%", member.getEffectiveName()).replace("%name2%", member.getUser().getAsTag()).replace("%emote%", emote);
+                if (Localization.instance().reactionMessage.contains("%msg%"))
                     retrieveMessage.submit().thenAccept((m) -> {
                         String outMsg2 = outMsg.replace("%msg%", m.getContentDisplay());
                         p.sendMessage(SpigotMessageUtils.formatEmoteMessage(m.getEmotes(), outMsg2));
@@ -80,7 +81,7 @@ public class SpigotServerInterface extends ServerInterface {
     @Override
     public void runMcCommand(String cmd, final CompletableFuture<InteractionHook> cmdMsg, User sender) {
         cmdMsg.thenAccept((msg) -> {
-            final CompletableFuture<Message> cmdMessage = msg.editOriginal(Configuration.instance().localization.commands.executing).submit();
+            final CompletableFuture<Message> cmdMessage = msg.editOriginal(Localization.instance().commands.executing).submit();
 
             Bukkit.getScheduler().runTask(DiscordIntegration.INSTANCE, () -> {
                 Bukkit.dispatchCommand(new DiscordCommandSender(cmd, cmdMessage,sender), cmd);

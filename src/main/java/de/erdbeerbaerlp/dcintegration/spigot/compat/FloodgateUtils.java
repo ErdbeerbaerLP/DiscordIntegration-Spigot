@@ -3,6 +3,7 @@ package de.erdbeerbaerlp.dcintegration.spigot.compat;
 import dcshadow.net.kyori.adventure.text.Component;
 import dcshadow.net.kyori.adventure.text.format.Style;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.util.TextColors;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
@@ -22,11 +23,11 @@ public class FloodgateUtils {
         if (isBedrockPlayer(p)) {
             if (Configuration.instance().linking.enableLinking && Variables.discord_instance.srv.isOnlineMode() && !Configuration.instance().linking.whitelistMode) {
                 if (PlayerLinkController.isBedrockPlayerLinked(p.getUniqueId())) {
-                    p.spigot().sendMessage(SpigotMessageUtils.adventureToSpigot(Component.text(Configuration.instance().localization.linking.alreadyLinked.replace("%player%", Variables.discord_instance.getJDA().getUserById(PlayerLinkController.getDiscordFromBedrockPlayer(p.getUniqueId())).getAsTag())).style(Style.style(TextColors.of(Color.RED)))));
+                    p.spigot().sendMessage(SpigotMessageUtils.adventureToSpigot(Component.text(Localization.instance().linking.alreadyLinked.replace("%player%", Variables.discord_instance.getJDA().getUserById(PlayerLinkController.getDiscordFromBedrockPlayer(p.getUniqueId())).getAsTag())).style(Style.style(TextColors.of(Color.RED)))));
                     return true;
                 }
                 final int r = Variables.discord_instance.genBedrockLinkNumber(p.getUniqueId());
-                p.spigot().sendMessage(SpigotMessageUtils.adventureToSpigot(Component.text(Configuration.instance().localization.linking.linkMsgIngame.replace("%num%", r + "").replace("%prefix%", "/")).style(Style.style(TextColors.of(Color.ORANGE)))));
+                p.spigot().sendMessage(SpigotMessageUtils.adventureToSpigot(Component.text(Localization.instance().linking.linkMsgIngame.replace("%num%", r + "").replace("%prefix%", "/")).style(Style.style(TextColors.of(Color.ORANGE)))));
                 return true;
             }
         }
