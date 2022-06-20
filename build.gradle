@@ -16,7 +16,7 @@ buildscript {
 }
 plugins {
     id 'java'
-    id "com.github.breadmoirai.github-release" version "2.3.7"
+    id "com.github.breadmoirai.github-release" version "2.4.1"
     id 'net.minecrell.plugin-yml.bukkit' version '0.5.1'
 }
 apply plugin: "com.matthewprenger.cursegradle"
