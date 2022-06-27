@@ -97,7 +97,7 @@ repositories{
 dependencies{
 
     // =========  Common  =====================
-    embed('de.erdbeerbaerlp:dcintegration.common:2.4.1') {
+    embed('de.erdbeerbaerlp:dcintegration.common:2.4.5-j8') {
         changing = true
     }
 
