@@ -11,6 +11,7 @@ import de.erdbeerbaerlp.dcintegration.common.storage.CommandRegistry;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
+import de.erdbeerbaerlp.dcintegration.common.util.DownloadSourceChecker;
 import de.erdbeerbaerlp.dcintegration.common.util.UpdateChecker;
 import de.erdbeerbaerlp.dcintegration.spigot.bstats.Metrics;
 import de.erdbeerbaerlp.dcintegration.spigot.command.McDiscordCommand;
@@ -67,8 +68,6 @@ public class DiscordIntegration extends JavaPlugin {
         if (!discordDataDir.exists()) discordDataDir.mkdir();
         try {
             Discord.loadConfigs();
-
-
             if (Configuration.instance().general.allowConfigMigration) {
                 //Migrate configs from DiscordSRV, if available
                 final File discordSrvDir = new File("./plugins/DiscordSRV/");
@@ -193,6 +192,13 @@ public class DiscordIntegration extends JavaPlugin {
                 discord_instance.startThreads();
             }
             UpdateChecker.runUpdateCheck("https://raw.githubusercontent.com/ErdbeerbaerLP/DiscordIntegration-Spigot/master/update_checker.json");
+
+            if (!DownloadSourceChecker.checkDownloadSource(new File(DiscordIntegration.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("%")[0]))) {
+                System.out.println("You likely got this mod from a third party website.");
+                System.out.println("Some of such websites are distributing malware or old versions.");
+                System.out.println("Download this mod from an official source (https://www.curseforge.com/minecraft/mc-mods/dcintegration) to hide this message");
+                System.out.println("This warning can also be suppressed in the config file");
+            }
         }, 30);
     }
 

@@ -12,6 +12,7 @@ import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import de.erdbeerbaerlp.dcintegration.spigot.DiscordIntegration;
 import de.erdbeerbaerlp.dcintegration.spigot.command.DiscordCommandSender;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.emoji.EmojiUnion;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.requests.RestAction;
 import org.bukkit.Bukkit;
@@ -62,16 +63,16 @@ public class SpigotServerInterface implements ServerInterface {
     }
 
     @Override
-    public void sendMCReaction(Member member, RestAction<Message> retrieveMessage, UUID targetUUID, MessageReaction.ReactionEmote reactionEmote) {
+    public void sendMCReaction(Member member, RestAction<Message> retrieveMessage, UUID targetUUID, EmojiUnion reactionEmote) {
         final Collection<? extends Player> l = Bukkit.getOnlinePlayers();
         for (final Player p : l) {
             if (p.getUniqueId().equals(targetUUID) && !Variables.discord_instance.ignoringPlayers.contains(p.getUniqueId()) && !PlayerLinkController.getSettings(null, p.getUniqueId()).ignoreDiscordChatIngame && !PlayerLinkController.getSettings(null, p.getUniqueId()).ignoreReactions) {
-                final String emote = reactionEmote.isEmote() ? ":" + reactionEmote.getEmote().getName() + ":" : MessageUtils.formatEmoteMessage(new ArrayList<>(), reactionEmote.getEmoji());
+                final String emote = ":" + reactionEmote.getName() + ":";
                 String outMsg = Localization.instance().reactionMessage.replace("%name%", member.getEffectiveName()).replace("%name2%", member.getUser().getAsTag()).replace("%emote%", emote);
                 if (Localization.instance().reactionMessage.contains("%msg%"))
                     retrieveMessage.submit().thenAccept((m) -> {
                         String outMsg2 = outMsg.replace("%msg%", m.getContentDisplay());
-                        p.sendMessage(SpigotMessageUtils.formatEmoteMessage(m.getEmotes(), outMsg2));
+                        p.sendMessage(SpigotMessageUtils.formatEmoteMessage(m.getMentions().getCustomEmojis(), outMsg2));
                     });
                 else p.sendMessage(outMsg);
             }

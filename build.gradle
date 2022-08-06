@@ -22,7 +22,7 @@ plugins {
 apply plugin: "com.matthewprenger.cursegradle"
 apply plugin: 'com.github.johnrengelman.shadow'
 
-version = "2.4.1"
+version = "2.4.7"
 group = "de.erdbeerbaerlp.dcintegration"
 archivesBaseName = "dcintegration-spigot"
 
@@ -35,7 +35,7 @@ configurations {
     compileOnly.extendsFrom(embed)
 }
 shadowJar {
-    classifier = '1.18'
+    classifier = '1.19.1'
     configurations = [project.configurations.embed]
 }
 artifacts {
@@ -47,7 +47,7 @@ bukkit {
     name = "DiscordIntegration"
     main = "de.erdbeerbaerlp.dcintegration.spigot.DiscordIntegration"
     author = "ErdbeerbaerLP"
-    apiVersion = "1.18"
+    apiVersion = "1.19"
     version = project.version
     website = "https://spigotmc.org/resources/discordintegration.87196/"
     commands {
@@ -97,13 +97,13 @@ repositories{
 dependencies{
 
     // =========  Common  =====================
-    embed('de.erdbeerbaerlp:dcintegration.common:2.4.1') {
+    embed('de.erdbeerbaerlp:dcintegration.common:2.4.7') {
         changing = true
     }
 
 
     // ============= Spigot =============
-    compileOnly 'org.spigotmc:spigot-api:1.18.2-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot-api:1.19.1-R0.1-SNAPSHOT'
 
 
     //Votifier
@@ -124,7 +124,7 @@ dependencies{
 }
 //Manifest attributes
 jar {
-    classifier = "1.18"
+    classifier = "1.19.1"
 }
 
 //Curseforge publishing
