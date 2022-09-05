@@ -11,7 +11,6 @@ buildscript {
     }
     dependencies {
         classpath "com.github.jengelman.gradle.plugins:shadow:6.1.0"
-        classpath 'com.github.MMD-Forks:CurseGradle:693e9a980c' //Modified CurseGradle to work with dev.bukkit.org
     }
 }
 plugins {
@@ -19,15 +18,14 @@ plugins {
     id "com.github.breadmoirai.github-release" version "2.3.7"
     id 'net.minecrell.plugin-yml.bukkit' version '0.5.1'
 }
-apply plugin: "com.matthewprenger.cursegradle"
 apply plugin: 'com.github.johnrengelman.shadow'
 
 version = "2.4.7"
 group = "de.erdbeerbaerlp.dcintegration"
-archivesBaseName = "dcintegration-spigot"
+archivesBaseName = "dcintegration-lilybukkit"
 
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 
 //ShadowJar
 configurations {
@@ -35,7 +33,7 @@ configurations {
     compileOnly.extendsFrom(embed)
 }
 shadowJar {
-    classifier = '1.19.1'
+    classifier = ''
     configurations = [project.configurations.embed]
 }
 artifacts {
@@ -45,9 +43,8 @@ artifacts {
 //Generates plugin.yml
 bukkit {
     name = "DiscordIntegration"
-    main = "de.erdbeerbaerlp.dcintegration.spigot.DiscordIntegration"
+    main = "de.erdbeerbaerlp.dcintegration.lilybukkit.DiscordIntegration"
     author = "ErdbeerbaerLP"
-    apiVersion = "1.19"
     version = project.version
     website = "https://spigotmc.org/resources/discordintegration.87196/"
     commands {
@@ -66,7 +63,6 @@ bukkit {
             setDefault('OP')
         }
     }
-    softDepend = ["Votifier", "dynmap", "floodgate-bukkit"]
 }
 
 
@@ -97,53 +93,23 @@ repositories{
 dependencies{
 
     // =========  Common  =====================
-    embed('de.erdbeerbaerlp:dcintegration.common:2.4.7') {
+    embed('de.erdbeerbaerlp:dcintegration.common:2.4.7-j8') {
         changing = true
     }
 
 
-    // ============= Spigot =============
-    compileOnly 'org.spigotmc:spigot-api:1.19.1-R0.1-SNAPSHOT'
+    // ============= LilyBukkit =============
+    compileOnly 'LilyBukkit:LilyBukkit-a1.2.1.0'  //  ./lib/LilyBukkit-a1.2.1.0.jar
 
 
-    //Votifier
-    compileOnly('com.github.vexsoftware:votifier:v1.9'){
-        transitive = false
-    }
+    /*compileOnly('de.erdbeerbaerlp:uuidapi:1.0.0-SNAPSHOT'){
+        changing = true
+    }*/
 
-    //Dynmap-Bukkit for workaround
-    compileOnly('com.github.webbukkit.dynmap:dynmap-api:v3.1'){
-        transitive = false
-    }
-
-    //Floodgate
-    compileOnly('org.geysermc.floodgate:api:2.1.1-SNAPSHOT')
-
-    //Dynmap-API
-    compileOnly('com.github.webbukkit:DynmapCoreAPI:2.5')
+    embed 'org.apache.logging.log4j:log4j-core:2.17.1'
 }
-//Manifest attributes
-jar {
-    classifier = "1.19.1"
-}
-
-//Curseforge publishing
-curseforge {
-    if (project.hasProperty('curseforge.apikey')) { // $GRADLE_USER_HOME/gradle.properties
-        apiKey = getProperty("curseforge.apikey")
-        project {
-            id = '440292'
-            changelog = project.changelog
-            releaseType = project.releaseType.toLowerCase()
-            addGameVersion("1.18")
-            mainArtifact(jar) {
-                displayName = "Gradle-TestRelease"
-            }
-        }
-        options{
-            bukkitIntegration = true
-            javaVersionAutoDetect = false
-            javaIntegration = true
-        }
+configurations.all {
+    resolutionStrategy {
+        cacheChangingModulesFor 5, 'minutes'
     }
 }
