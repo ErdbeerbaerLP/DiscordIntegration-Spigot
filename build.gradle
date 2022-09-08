@@ -99,7 +99,7 @@ dependencies{
 
 
     // ============= LilyBukkit =============
-    compileOnly 'LilyBukkit:LilyBukkit-a1.2.1.0'  //  ./lib/LilyBukkit-a1.2.1.0.jar
+    compileOnly 'LilyBukkit:LilyBukkit-a2.0.0.0'  //  ./lib/LilyBukkit-a1.2.1.0.jar
 
 
     /*compileOnly('de.erdbeerbaerlp:uuidapi:1.0.0-SNAPSHOT'){
