@@ -67,19 +67,15 @@ public class LilypadPlayerListener extends PlayerListener {
 
     @Override
     public void onPlayerPreLogin(PlayerPreLoginEvent ev) {
-        System.out.println("prelogin");
         if (Configuration.instance().linking.whitelistMode && discord_instance.srv.isOnlineMode()) {
             try {
                 if (!PlayerLinkController.isPlayerLinked(UUIDUtils.getUUIDFromName(ev.getName()))) {
                     ev.disallow(PlayerPreLoginEvent.Result.KICK_WHITELIST, Localization.instance().linking.notWhitelistedCode.replace("%code%", "" + (Variables.discord_instance.genLinkNumber(UUIDUtils.getUUIDFromName(ev.getName())))));
-                    System.out.println("Joining disallowed");
                 }else if(!Variables.discord_instance.canPlayerJoin(UUIDUtils.getUUIDFromName(ev.getName()))){
                     ev.disallow(PlayerPreLoginEvent.Result.KICK_WHITELIST, Localization.instance().linking.notWhitelistedRole);
-                    System.out.println("Joining disallowed");
                 }
             } catch (IllegalStateException e) {
                 ev.disallow(PlayerPreLoginEvent.Result.KICK_OTHER, "Please check " + Variables.discordDataDir + "LinkedPlayers.json\n\n" + e.toString());
-                System.out.println("Joining disallowed");
             }
         }
     }

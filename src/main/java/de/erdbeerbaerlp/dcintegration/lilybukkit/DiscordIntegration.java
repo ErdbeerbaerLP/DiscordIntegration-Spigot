@@ -69,7 +69,6 @@ public class DiscordIntegration extends JavaPlugin {
                 if (discord_instance.getChannel() != null)
                     startingMsg = discord_instance.sendMessageReturns(Localization.instance().serverStarting, discord_instance.getChannel(Configuration.instance().advanced.serverChannelID));
             }
-
             CommandRegistry.registerDefaultCommandsFromConfig();
 
         } catch (InterruptedException | NullPointerException ignored) {
@@ -108,23 +107,24 @@ public class DiscordIntegration extends JavaPlugin {
 
 
         //Run only after server is started
-            System.out.println("Started");
-            started = new Date().getTime();
-            if (discord_instance != null)
-                if (startingMsg != null) {
-                    startingMsg.thenAccept((a) -> a.editMessage(Localization.instance().serverStarted).queue());
-                } else discord_instance.sendMessage(Localization.instance().serverStarted);
-            if (discord_instance != null) {
-                discord_instance.startThreads();
-            }
-            UpdateChecker.runUpdateCheck("https://raw.githubusercontent.com/ErdbeerbaerLP/DiscordIntegration-Spigot/master/update_checker.json");
+            getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
+                System.out.println("Started");
+                started = new Date().getTime();
+                if (discord_instance != null)
+                    if (startingMsg != null) {
+                        startingMsg.thenAccept((a) -> a.editMessage(Localization.instance().serverStarted).queue());
+                    } else discord_instance.sendMessage(Localization.instance().serverStarted);
+                if (discord_instance != null) {
+                    discord_instance.startThreads();
+                }
+                if (!DownloadSourceChecker.checkDownloadSource(new File(DiscordIntegration.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("%")[0]))) {
+                    System.out.println("You likely got this mod from a third party website.");
+                    System.out.println("Some of such websites are distributing malware or old versions.");
+                    System.out.println("Download this mod from an official source (https://www.curseforge.com/minecraft/mc-mods/dcintegration) to hide this message");
+                    System.out.println("This warning can also be suppressed in the config file");
+                }
+            });
+        }
 
-            if (!DownloadSourceChecker.checkDownloadSource(new File(DiscordIntegration.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("%")[0]))) {
-                System.out.println("You likely got this mod from a third party website.");
-                System.out.println("Some of such websites are distributing malware or old versions.");
-                System.out.println("Download this mod from an official source (https://www.curseforge.com/minecraft/mc-mods/dcintegration) to hide this message");
-                System.out.println("This warning can also be suppressed in the config file");
-            }
-        };
     }
 }
