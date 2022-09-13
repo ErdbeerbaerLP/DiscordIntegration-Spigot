@@ -123,7 +123,7 @@ public class DiscordIntegration extends JavaPlugin {
                     System.out.println("Download this mod from an official source (https://www.curseforge.com/minecraft/mc-mods/dcintegration) to hide this message");
                     System.out.println("This warning can also be suppressed in the config file");
                 }
-            });
+            }, 30);
         }
 
     }
