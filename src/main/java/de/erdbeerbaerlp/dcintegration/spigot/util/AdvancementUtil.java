@@ -1,5 +1,6 @@
 package de.erdbeerbaerlp.dcintegration.spigot.util;
 
+import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 
 import java.lang.reflect.Field;
@@ -93,23 +94,23 @@ public class AdvancementUtil {
      * Used for finding the required fields and methods
      */
     private static void printDebugMessage(Class<?> c) {
-        System.out.println("Declared fields: ");
+        Variables.LOGGER.info("Declared fields: ");
         for (Field s : c.getDeclaredFields()) {
             s.setAccessible(true);
             try {
-                System.out.println(s + " : " + s.get(c));
+                Variables.LOGGER.info(s + " : " + s.get(c));
             } catch (Exception ignored) {
             }
         }
-        System.out.println("Fields: ");
+        Variables.LOGGER.info("Fields: ");
         for (Field s : c.getFields()) {
             s.setAccessible(true);
             try {
-                System.out.println(s + " : " + s.get(c));
+                Variables.LOGGER.info(s + " : " + s.get(c));
             } catch (Exception ignored) {
             }
         }
-        System.out.println("Methods: ");
-        for (Method m : c.getMethods()) System.out.println(m.toString());
+        Variables.LOGGER.info("Methods: ");
+        for (Method m : c.getMethods()) Variables.LOGGER.info(m.toString());
     }
 }

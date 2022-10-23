@@ -22,7 +22,7 @@ plugins {
 apply plugin: "com.matthewprenger.cursegradle"
 apply plugin: 'com.github.johnrengelman.shadow'
 
-version = "2.4.7"
+version = "2.5.0"
 group = "de.erdbeerbaerlp.dcintegration"
 archivesBaseName = "dcintegration-spigot"
 
@@ -35,7 +35,7 @@ configurations {
     compileOnly.extendsFrom(embed)
 }
 shadowJar {
-    classifier = '1.19.1'
+    classifier = '1.19.2'
     configurations = [project.configurations.embed]
 }
 artifacts {
@@ -72,15 +72,14 @@ bukkit {
 
 repositories{
     maven { url 'https://jitpack.io' }
-    maven {
-        name = 'sonatype-oss'
-        url = 'https://oss.sonatype.org/content/repositories/snapshots/'
+    maven{ url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"
+        content {
+            includeGroup 'org.bukkit'
+            includeGroup 'org.spigotmc'
+        }
     }
-
-    maven {
-        name = 'spigotmc-repo'
-        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
-    }
+    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url = 'https://oss.sonatype.org/content/repositories/central' }
     maven {
         name = 'sonatype'
         url = 'https://oss.sonatype.org/content/groups/public/'
@@ -93,17 +92,24 @@ repositories{
         dirs 'libs'
     }
     maven { url "https://repo.erdbeerbaerlp.de/repository/maven-public/" }
+    mavenLocal()
+}
+
+configurations.all {
+    resolutionStrategy {
+        cacheChangingModulesFor 5, 'minutes'
+    }
 }
 dependencies{
 
     // =========  Common  =====================
-    embed('de.erdbeerbaerlp:dcintegration.common:2.4.7') {
+    embed('de.erdbeerbaerlp:dcintegration.common:2.5.0-SNAPSHOT') {
         changing = true
     }
 
 
     // ============= Spigot =============
-    compileOnly 'org.spigotmc:spigot-api:1.19.1-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot-api:1.19.2-R0.1-SNAPSHOT'
 
 
     //Votifier
@@ -121,10 +127,13 @@ dependencies{
 
     //Dynmap-API
     compileOnly('com.github.webbukkit:DynmapCoreAPI:2.5')
+
+    //Logging
+    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.17.1'
 }
 //Manifest attributes
 jar {
-    classifier = "1.19.1"
+    classifier = "1.19.2"
 }
 
 //Curseforge publishing
@@ -135,7 +144,7 @@ curseforge {
             id = '440292'
             changelog = project.changelog
             releaseType = project.releaseType.toLowerCase()
-            addGameVersion("1.18")
+            addGameVersion("1.19")
             mainArtifact(jar) {
                 displayName = "Gradle-TestRelease"
             }

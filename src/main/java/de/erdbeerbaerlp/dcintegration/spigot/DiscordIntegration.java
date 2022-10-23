@@ -13,6 +13,7 @@ import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.util.DownloadSourceChecker;
 import de.erdbeerbaerlp.dcintegration.common.util.UpdateChecker;
+import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import de.erdbeerbaerlp.dcintegration.spigot.bstats.Metrics;
 import de.erdbeerbaerlp.dcintegration.spigot.command.McDiscordCommand;
 import de.erdbeerbaerlp.dcintegration.spigot.compat.DynmapWorkaroundListener;
@@ -74,7 +75,7 @@ public class DiscordIntegration extends JavaPlugin {
                 if (discordSrvDir.exists()) {
                     final File dsrvConfig = new File(discordSrvDir, "config.yml");
                     if (dsrvConfig.exists()) {
-                        System.out.println("Found DiscordSRV Config, attempting to migrate!");
+                        Variables.LOGGER.info("Found DiscordSRV Config, attempting to migrate!");
                         final Gson gson = new Gson();
                         final YamlConfiguration cfg = YamlConfiguration.loadConfiguration(dsrvConfig);
                         final Configuration conf = Configuration.instance();
@@ -90,7 +91,7 @@ public class DiscordIntegration extends JavaPlugin {
                         else if (cfg.getString("DiscordGameStatus") != null)
                             conf.general.botStatusName = cfg.getString("DiscordGameStatus");
                         conf.saveConfig();
-                        System.out.println("Migrated " + dsrvConfig.getPath());
+                        Variables.LOGGER.info("Migrated " + dsrvConfig.getPath());
                         final File linkedPlayers = new File(discordSrvDir, "linkedaccounts.json");
                         if (linkedPlayers.exists()) {
                             try {
@@ -98,20 +99,20 @@ public class DiscordIntegration extends JavaPlugin {
                                 final JsonObject object = gson.fromJson(r, JsonObject.class);
                                 object.entrySet().forEach((e) -> PlayerLinkController.migrateLinkPlayer(e.getKey(), UUID.fromString(e.getValue().getAsString())));
                                 r.close();
-                                System.out.println("Migrated " + linkedPlayers.getPath());
+                                Variables.LOGGER.info("Migrated " + linkedPlayers.getPath());
                             } catch (IOException e) {
-                                System.out.println("Failed to migrate " + linkedPlayers.getPath());
+                                Variables.LOGGER.error("Failed to migrate " + linkedPlayers.getPath());
                                 e.printStackTrace();
                             }
                         }
-                        System.out.println("Migration done! Renaming DiscordSRV's config directory...");
+                        Variables.LOGGER.info("Migration done! Renaming DiscordSRV's config directory...");
                         File backupDir = new File("./plugins/DiscordSRV_" + System.nanoTime() + "/");
 
                         try {
                             Files.move(discordSrvDir.toPath(), backupDir.toPath());
-                            System.out.println("DONE");
+                            Variables.LOGGER.info("DONE");
                         } catch (IOException e) {
-                            System.out.println("Failed. Plugin might migrate again at next startup");
+                            Variables.LOGGER.error("Failed. Plugin might migrate again at next startup");
                             e.printStackTrace();
                         }
                     }
@@ -128,7 +129,7 @@ public class DiscordIntegration extends JavaPlugin {
 
         try {
             //Wait a short time to allow JDA to get initialized
-            System.out.println("Waiting for JDA to initialize to send starting message... (max 5 seconds before skipping)");
+            Variables.LOGGER.info("Waiting for JDA to initialize to send starting message... (max 5 seconds before skipping)");
             for (int i = 0; i <= 5; i++) {
                 if (discord_instance.getJDA() == null) Thread.sleep(1000);
                 else break;
@@ -169,7 +170,7 @@ public class DiscordIntegration extends JavaPlugin {
 
         //Run only after server is started
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
-            System.out.println("Started");
+            Variables.LOGGER.info("Started");
             started = new Date().getTime();
             if (discord_instance != null)
                 if (startingMsg != null) {
@@ -194,10 +195,10 @@ public class DiscordIntegration extends JavaPlugin {
             UpdateChecker.runUpdateCheck("https://raw.githubusercontent.com/ErdbeerbaerLP/DiscordIntegration-Spigot/master/update_checker.json");
 
             if (!DownloadSourceChecker.checkDownloadSource(new File(DiscordIntegration.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("%")[0]))) {
-                System.out.println("You likely got this mod from a third party website.");
-                System.out.println("Some of such websites are distributing malware or old versions.");
-                System.out.println("Download this mod from an official source (https://www.curseforge.com/minecraft/mc-mods/dcintegration) to hide this message");
-                System.out.println("This warning can also be suppressed in the config file");
+                Variables.LOGGER.warn("You likely got this mod from a third party website.");
+                Variables.LOGGER.warn("Some of such websites are distributing malware or old versions.");
+                Variables.LOGGER.warn("Download this mod from an official source (https://www.curseforge.com/minecraft/mc-mods/dcintegration) to hide this message");
+                Variables.LOGGER.warn("This warning can also be suppressed in the config file");
             }
         }, 30);
     }

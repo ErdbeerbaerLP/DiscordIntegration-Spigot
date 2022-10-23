@@ -1,32 +1,29 @@
 package de.erdbeerbaerlp.dcintegration.spigot.util;
 
 import dcshadow.net.kyori.adventure.text.Component;
-import dcshadow.org.jetbrains.annotations.NotNull;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.util.ComponentUtils;
-import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
 import de.erdbeerbaerlp.dcintegration.common.util.ServerInterface;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import de.erdbeerbaerlp.dcintegration.spigot.DiscordIntegration;
 import de.erdbeerbaerlp.dcintegration.spigot.command.DiscordCommandSender;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.emoji.EmojiUnion;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.requests.RestAction;
 import org.bukkit.Bukkit;
-import org.bukkit.Server;
 import org.bukkit.Sound;
-import org.bukkit.command.CommandSender;
+import org.bukkit.command.CommandException;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.Permission;
-import org.bukkit.permissions.PermissionAttachment;
-import org.bukkit.permissions.PermissionAttachmentInfo;
-import org.bukkit.plugin.Plugin;
 
-import javax.lang.model.element.VariableElement;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class SpigotServerInterface implements ServerInterface {
@@ -85,7 +82,11 @@ public class SpigotServerInterface implements ServerInterface {
             final CompletableFuture<Message> cmdMessage = msg.editOriginal(Localization.instance().commands.executing).submit();
 
             Bukkit.getScheduler().runTask(DiscordIntegration.INSTANCE, () -> {
-                Bukkit.dispatchCommand(new DiscordCommandSender(cmd, cmdMessage,sender), cmd);
+                try {
+                    Bukkit.dispatchCommand(new DiscordCommandSender(cmdMessage, sender), cmd);
+                }catch (CommandException e){
+                    cmdMessage.thenAccept((a)-> a.editMessage(e.getMessage()+(e.getCause() != null?("\n"+e.getCause().getMessage()):"")).queue());
+                }
             });
         });
     }

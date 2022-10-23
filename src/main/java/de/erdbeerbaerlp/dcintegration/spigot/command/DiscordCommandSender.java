@@ -2,43 +2,77 @@ package de.erdbeerbaerlp.dcintegration.spigot.command;
 
 import dcshadow.dev.vankka.mcdiscordreserializer.discord.DiscordSerializer;
 import dcshadow.dev.vankka.mcdiscordreserializer.discord.DiscordSerializerOptions;
-import dcshadow.net.kyori.adventure.text.Component;
 import dcshadow.net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import dcshadow.org.jetbrains.annotations.NotNull;
-import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import de.erdbeerbaerlp.dcintegration.spigot.util.SpigotMessageUtils;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.interactions.InteractionHook;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
-import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.conversations.Conversation;
+import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 
 import javax.annotation.Nullable;
-import javax.lang.model.element.VariableElement;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class DiscordCommandSender implements CommandSender {
-    private final String cmd;
+@SuppressWarnings("NullableProblems")
+public class DiscordCommandSender implements ConsoleCommandSender {
     private CompletableFuture<Message> editedMessage;
     final StringBuilder tmpMessage = new StringBuilder();
     private final User sender;
 
-    public DiscordCommandSender(String cmd, CompletableFuture<Message> cmdMsg, User sender) {
-        this.cmd = cmd;
+    public DiscordCommandSender(CompletableFuture<Message> cmdMsg, User sender) {
         this.editedMessage = cmdMsg;
         this.sender = sender;
     }
 
     public void appendMessage(String msg) {
-        tmpMessage.append(DiscordSerializer.INSTANCE.serialize(LegacyComponentSerializer.legacySection().deserialize(msg),DiscordSerializerOptions.defaults())).append("\n");
+        tmpMessage.append(DiscordSerializer.INSTANCE.serialize(LegacyComponentSerializer.legacySection().deserialize(msg), DiscordSerializerOptions.defaults())).append("\n");
     }
+
+
+    @Override
+    public boolean isConversing() {
+        return false;
+    }
+
+    @Override
+    public void acceptConversationInput(String input) {
+
+    }
+
+    @Override
+    public boolean beginConversation(Conversation conversation) {
+        return false;
+    }
+
+    @Override
+    public void abandonConversation(Conversation conversation) {
+
+    }
+
+    @Override
+    public void abandonConversation(Conversation conversation, ConversationAbandonedEvent details) {
+
+    }
+
+    @Override
+    public void sendRawMessage(String message) {
+        sendMessage(message);
+    }
+
+    @Override
+    public void sendRawMessage(UUID sender, String message) {
+        sendMessage(message);
+    }
+
 
     // Spigot start
     class SpigotProxy extends Spigot {

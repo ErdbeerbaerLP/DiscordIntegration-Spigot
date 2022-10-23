@@ -5,7 +5,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 public abstract class SpigotDiscordEventHandler extends DiscordEventHandler {
     /**
-     * Gets called before an minecraft message gets sent to discord
+     * Gets called before a minecraft message gets sent to discord
      *
      * @return true to cancel default code execution
      */
