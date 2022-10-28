@@ -1,8 +1,8 @@
 package de.erdbeerbaerlp.dcintegration.spigot;
 
-import dcshadow.com.google.gson.Gson;
-import dcshadow.com.google.gson.JsonObject;
-import dcshadow.com.google.gson.stream.JsonReader;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
 import de.erdbeerbaerlp.dcintegration.common.Discord;
 import de.erdbeerbaerlp.dcintegration.common.addon.AddonLoader;
 import de.erdbeerbaerlp.dcintegration.common.addon.DiscordAddonMeta;

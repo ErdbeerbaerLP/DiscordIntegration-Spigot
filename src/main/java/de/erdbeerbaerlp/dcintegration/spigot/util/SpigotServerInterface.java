@@ -38,6 +38,11 @@ public class SpigotServerInterface implements ServerInterface {
     }
 
     @Override
+    public String getLoaderName() {
+        return "Spigot";
+    }
+
+    @Override
     public void sendMCMessage(Component msg) {
         final Collection<? extends Player> l = Bukkit.getOnlinePlayers();
         msg = msg.replaceText(ComponentUtils.replaceLiteral("\\\n", Component.newline()));

@@ -1,7 +1,6 @@
 buildscript {
     repositories {
         mavenCentral()
-        maven { url 'https://jitpack.io' }
         repositories {
             maven {
                 url "https://plugins.gradle.org/m2/"
@@ -11,15 +10,15 @@ buildscript {
     }
     dependencies {
         classpath "com.github.jengelman.gradle.plugins:shadow:6.1.0"
-        classpath 'com.github.MMD-Forks:CurseGradle:693e9a980c' //Modified CurseGradle to work with dev.bukkit.org
     }
 }
 plugins {
     id 'java'
     id "com.github.breadmoirai.github-release" version "2.3.7"
     id 'net.minecrell.plugin-yml.bukkit' version '0.5.1'
+    id "com.modrinth.minotaur" version "1.2.1"
+    id 'io.github.CDAGaming.cursegradle' version "1.6.0"
 }
-apply plugin: "com.matthewprenger.cursegradle"
 apply plugin: 'com.github.johnrengelman.shadow'
 
 version = "2.5.0"
@@ -103,7 +102,7 @@ configurations.all {
 dependencies{
 
     // =========  Common  =====================
-    embed('de.erdbeerbaerlp:dcintegration.common:2.5.0-SNAPSHOT') {
+    embed('de.erdbeerbaerlp:dcintegration.common:2.5.0') {
         changing = true
     }
 
@@ -146,7 +145,7 @@ curseforge {
             releaseType = project.releaseType.toLowerCase()
             addGameVersion("1.19")
             mainArtifact(jar) {
-                displayName = "Gradle-TestRelease"
+                it.displayName = "DiscordIntegration-Spigot $version (MC 1.19.2)"
             }
         }
         options{
@@ -156,3 +155,26 @@ curseforge {
         }
     }
 }
+
+import com.modrinth.minotaur.TaskModrinthUpload
+
+task publishModrinth(type: TaskModrinthUpload) {
+
+    if (project.hasProperty('modrinth.apikey')) { // $GRADLE_USER_HOME/gradle.properties
+        token = getProperty("modrinth.apikey") // Use an environment property!
+        projectId = 'rbJ7eS5V'
+        versionNumber = version+"spigot1.19.2"
+        versionName = "DiscordIntegration-Spigot $version (MC 1.19.2)"
+        uploadFile = shadowJar
+        changelog = project.changelog
+        addGameVersion('1.19.2')
+        addLoader('spigot')
+        addLoader('paper')
+        releaseType = project.releaseType.toUpperCase()
+    }
+}
+
+task release {
+
+}
+tasks.release.dependsOn(tasks.build, tasks.curseforge, tasks.publishModrinth)
