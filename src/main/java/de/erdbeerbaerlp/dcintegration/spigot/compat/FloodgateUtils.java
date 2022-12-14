@@ -9,7 +9,6 @@ import de.erdbeerbaerlp.dcintegration.common.util.TextColors;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import de.erdbeerbaerlp.dcintegration.spigot.util.SpigotMessageUtils;
 import org.bukkit.entity.Player;
-import org.geysermc.floodgate.api.FloodgateApi;
 
 import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
@@ -33,7 +32,7 @@ public class FloodgateUtils {
         }
         return false;
     }
-    public static boolean isBedrockPlayer(Player p ){
+    public static boolean isBedrockPlayer(Player p){
         try {
             final Class<?> aClass = Class.forName("org.geysermc.floodgate.api.FloodgateApi");
             final Object getInstance = aClass.getDeclaredMethod("getInstance").invoke(null);
@@ -41,7 +40,6 @@ public class FloodgateUtils {
             final Object invoke = isBedrockPlayer.invoke(getInstance, p.getUniqueId());
             return (boolean) invoke;
         }catch (RuntimeException | ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e){
-            e.printStackTrace();
             return false;
         }
     }

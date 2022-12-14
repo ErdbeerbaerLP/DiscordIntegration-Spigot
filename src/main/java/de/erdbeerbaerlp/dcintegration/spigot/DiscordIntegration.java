@@ -35,6 +35,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 import static de.erdbeerbaerlp.dcintegration.common.util.Variables.*;
 
@@ -48,7 +49,7 @@ public class DiscordIntegration extends JavaPlugin {
     /**
      * Used to detect plugin reloads in onEnable
      */
-    private boolean active = false;
+    public static boolean active = false;
     public Object dynmapListener;
 
     @Override
@@ -217,8 +218,19 @@ public class DiscordIntegration extends JavaPlugin {
     public void onDisable() {
         active = false;
         if (discord_instance != null) {
-            discord_instance.sendMessage(Localization.instance().serverStopped);
-            discord_instance.kill(false);
+
+            try {
+                if (!Configuration.instance().webhook.enable)
+                    discord_instance.sendMessageReturns(
+                            Localization.instance().serverStopped,
+                            discord_instance.getChannel(Configuration.instance().advanced.serverChannelID)
+                    ).get();
+                else
+                    discord_instance.sendMessage(Localization.instance().serverStopped,
+                            discord_instance.getChannel(Configuration.instance().advanced.serverChannelID));
+            } catch (InterruptedException | ExecutionException ignored) {
+            }
+            discord_instance.kill(true);
             if (getServer().getPluginManager().getPlugin("dynmap") != null && dynmapListener != null) {
                 org.dynmap.DynmapCommonAPIListener.unregister((DynmapCommonAPIListener) dynmapListener);
             }

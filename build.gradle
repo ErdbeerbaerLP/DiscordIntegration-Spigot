@@ -21,7 +21,7 @@ plugins {
 }
 apply plugin: 'com.github.johnrengelman.shadow'
 
-version = "2.5.0"
+version = "2.6.0"
 group = "de.erdbeerbaerlp.dcintegration"
 archivesBaseName = "dcintegration-spigot"
 
@@ -96,13 +96,13 @@ repositories{
 
 configurations.all {
     resolutionStrategy {
-        cacheChangingModulesFor 5, 'minutes'
+        cacheChangingModulesFor 1, 'minutes'
     }
 }
 dependencies{
 
     // =========  Common  =====================
-    embed('de.erdbeerbaerlp:dcintegration.common:2.5.0') {
+    embed('de.erdbeerbaerlp:dcintegration.common:2.6.0-SNAPSHOT') {
         changing = true
     }
 

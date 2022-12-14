@@ -14,7 +14,7 @@ import de.erdbeerbaerlp.dcintegration.spigot.util.SpigotMessageUtils;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.StandardGuildMessageChannel;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -36,7 +36,7 @@ public class SpigotEventListener implements Listener {
             try {
                 if (!PlayerLinkController.isPlayerLinked(ev.getPlayer().getUniqueId())) {
                     ev.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, Localization.instance().linking.notWhitelistedCode.replace("%code%", "" + (FloodgateUtils.isBedrockPlayer(ev.getPlayer()) ? Variables.discord_instance.genBedrockLinkNumber(ev.getPlayer().getUniqueId()) : Variables.discord_instance.genLinkNumber(ev.getPlayer().getUniqueId()))));
-                }else if(!Variables.discord_instance.canPlayerJoin(ev.getPlayer().getUniqueId())){
+                } else if (!Variables.discord_instance.canPlayerJoin(ev.getPlayer().getUniqueId())) {
                     ev.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, Localization.instance().linking.notWhitelistedRole);
                 }
             } catch (IllegalStateException e) {
@@ -70,7 +70,7 @@ public class SpigotEventListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onAdvancement(PlayerAdvancementDoneEvent ev) throws NoSuchFieldException {
+    public void onAdvancement(PlayerAdvancementDoneEvent ev) {
         if (discord_instance != null) {
             if (PlayerLinkController.getSettings(null, ev.getPlayer().getUniqueId()).hideFromDiscord) return;
             final AdvancementUtil.Advancement advancement = AdvancementUtil.getAdvancement(ev);
@@ -88,12 +88,16 @@ public class SpigotEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerLeave(PlayerQuitEvent ev) {
-        if (PlayerLinkController.getSettings(null, ev.getPlayer().getUniqueId()).hideFromDiscord) return;
-        if (discord_instance != null && !timeouts.contains(ev.getPlayer().getUniqueId()))
-            discord_instance.sendMessage(Localization.instance().playerLeave.replace("%player%", SpigotMessageUtils.formatPlayerName(ev.getPlayer())));
-        else if (discord_instance != null && timeouts.contains(ev.getPlayer().getUniqueId())) {
-            discord_instance.sendMessage(Localization.instance().playerTimeout.replace("%player%", SpigotMessageUtils.formatPlayerName(ev.getPlayer())));
-            timeouts.remove(ev.getPlayer().getUniqueId());
+        if(discord_instance != null) {
+            if(DiscordIntegration.active) {
+                if (PlayerLinkController.getSettings(null, ev.getPlayer().getUniqueId()).hideFromDiscord) return;
+                if (!timeouts.contains(ev.getPlayer().getUniqueId())) {
+                    discord_instance.sendMessage(Localization.instance().playerLeave.replace("%player%", SpigotMessageUtils.formatPlayerName(ev.getPlayer())));
+                } else if (timeouts.contains(ev.getPlayer().getUniqueId())) {
+                    discord_instance.sendMessage(Localization.instance().playerTimeout.replace("%player%", SpigotMessageUtils.formatPlayerName(ev.getPlayer())));
+                    timeouts.remove(ev.getPlayer().getUniqueId());
+                }
+            }
         }
     }
 
@@ -144,7 +148,7 @@ public class SpigotEventListener implements Listener {
             })) return;
 
             String text = MessageUtils.escapeMarkdown(ev.getMessage().replace("@everyone", "[at]everyone").replace("@here", "[at]here"));
-            final TextChannel channel = discord_instance.getChannel(Configuration.instance().advanced.chatOutputChannelID);
+            final StandardGuildMessageChannel channel = discord_instance.getChannel(Configuration.instance().advanced.chatOutputChannelID);
             discord_instance.sendMessage(SpigotMessageUtils.formatPlayerName(ev.getPlayer()), ev.getPlayer().getUniqueId().toString(), new DiscordMessage(null, text, true), channel);
 
             //Set chat message to a more readable format
