@@ -34,7 +34,7 @@ configurations {
     compileOnly.extendsFrom(embed)
 }
 shadowJar {
-    classifier = '1.19.2'
+    classifier = '1.19.3'
     configurations = [project.configurations.embed]
 }
 artifacts {
@@ -102,13 +102,13 @@ configurations.all {
 dependencies{
 
     // =========  Common  =====================
-    embed('de.erdbeerbaerlp:dcintegration.common:2.6.0-SNAPSHOT') {
+    embed('de.erdbeerbaerlp:dcintegration.common:2.6.0') {
         changing = true
     }
 
 
     // ============= Spigot =============
-    compileOnly 'org.spigotmc:spigot-api:1.19.2-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT'
 
 
     //Votifier
@@ -145,7 +145,7 @@ curseforge {
             releaseType = project.releaseType.toLowerCase()
             addGameVersion("1.19")
             mainArtifact(jar) {
-                it.displayName = "DiscordIntegration-Spigot $version (MC 1.19.2)"
+                it.displayName = "DiscordIntegration-Spigot $version (MC 1.19.3)"
             }
         }
         options{
@@ -163,11 +163,11 @@ task publishModrinth(type: TaskModrinthUpload) {
     if (project.hasProperty('modrinth.apikey')) { // $GRADLE_USER_HOME/gradle.properties
         token = getProperty("modrinth.apikey") // Use an environment property!
         projectId = 'rbJ7eS5V'
-        versionNumber = version+"spigot1.19.2"
-        versionName = "DiscordIntegration-Spigot $version (MC 1.19.2)"
+        versionNumber = version+"spigot1.19.3"
+        versionName = "DiscordIntegration-Spigot $version (MC 1.19.3)"
         uploadFile = shadowJar
         changelog = project.changelog
-        addGameVersion('1.19.2')
+        addGameVersion('1.19.3')
         addLoader('spigot')
         addLoader('paper')
         releaseType = project.releaseType.toUpperCase()

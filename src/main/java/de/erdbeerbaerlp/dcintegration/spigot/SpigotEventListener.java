@@ -40,7 +40,8 @@ public class SpigotEventListener implements Listener {
                     ev.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, Localization.instance().linking.notWhitelistedRole);
                 }
             } catch (IllegalStateException e) {
-                ev.disallow(PlayerLoginEvent.Result.KICK_OTHER, "Please check " + Variables.discordDataDir + "LinkedPlayers.json\n\n" + e.toString());
+                ev.disallow(PlayerLoginEvent.Result.KICK_OTHER, "An error occured\nPlease check Server Log for more information\n\n" + e);
+                e.printStackTrace();
             }
         }
     }
