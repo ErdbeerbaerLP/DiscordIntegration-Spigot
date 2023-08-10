@@ -1,6 +1,6 @@
 package de.erdbeerbaerlp.dcintegration.spigot.util;
 
-import de.erdbeerbaerlp.dcintegration.common.util.Variables;
+import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 
 import java.lang.reflect.Field;
@@ -11,9 +11,17 @@ public class AdvancementUtil {
         public final String name;
         public final String description;
 
-        Advancement(String name, String description) {
+        public Advancement(String name, String description) {
             this.name = name;
             this.description = description;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public String getTitle() {
+            return name;
         }
     }
 
@@ -94,23 +102,23 @@ public class AdvancementUtil {
      * Used for finding the required fields and methods
      */
     private static void printDebugMessage(Class<?> c) {
-        Variables.LOGGER.info("Declared fields: ");
+        DiscordIntegration.LOGGER.info("Declared fields: ");
         for (Field s : c.getDeclaredFields()) {
             s.setAccessible(true);
             try {
-                Variables.LOGGER.info(s + " : " + s.get(c));
+                DiscordIntegration.LOGGER.info(s + " : " + s.get(c));
             } catch (Exception ignored) {
             }
         }
-        Variables.LOGGER.info("Fields: ");
+        DiscordIntegration.LOGGER.info("Fields: ");
         for (Field s : c.getFields()) {
             s.setAccessible(true);
             try {
-                Variables.LOGGER.info(s + " : " + s.get(c));
+                DiscordIntegration.LOGGER.info(s + " : " + s.get(c));
             } catch (Exception ignored) {
             }
         }
-        Variables.LOGGER.info("Methods: ");
-        for (Method m : c.getMethods()) Variables.LOGGER.info(m.toString());
+        DiscordIntegration.LOGGER.info("Methods: ");
+        for (Method m : c.getMethods()) DiscordIntegration.LOGGER.info(m.toString());
     }
 }

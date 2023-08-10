@@ -21,7 +21,7 @@ plugins {
 }
 apply plugin: 'com.github.johnrengelman.shadow'
 
-version = "2.6.0"
+version = "3.0.1"
 group = "de.erdbeerbaerlp.dcintegration"
 archivesBaseName = "dcintegration-spigot"
 
@@ -34,8 +34,9 @@ configurations {
     compileOnly.extendsFrom(embed)
 }
 shadowJar {
-    classifier = '1.19.3'
+    classifier = '1.20.1'
     configurations = [project.configurations.embed]
+    exclude "/org/sqlite/**"
 }
 artifacts {
     archives tasks.shadowJar
@@ -44,11 +45,11 @@ artifacts {
 //Generates plugin.yml
 bukkit {
     name = "DiscordIntegration"
-    main = "de.erdbeerbaerlp.dcintegration.spigot.DiscordIntegration"
+    main = "de.erdbeerbaerlp.dcintegration.spigot.DiscordIntegrationPlugin"
     author = "ErdbeerbaerLP"
-    apiVersion = "1.19"
+    apiVersion = "1.18"
     version = project.version
-    website = "https://spigotmc.org/resources/discordintegration.87196/"
+    website = "https://modrinth.com/plugin/dcintegration/"
     commands {
         discord {
             aliases = ["dc"]
@@ -102,7 +103,7 @@ configurations.all {
 dependencies{
 
     // =========  Common  =====================
-    embed('de.erdbeerbaerlp:dcintegration.common:2.6.0') {
+    embed('de.erdbeerbaerlp:dcintegration.common:3.0.1') {
         changing = true
     }
 
@@ -132,7 +133,7 @@ dependencies{
 }
 //Manifest attributes
 jar {
-    classifier = "1.19.2"
+    classifier = "1.20.1"
 }
 
 //Curseforge publishing
@@ -143,9 +144,11 @@ curseforge {
             id = '440292'
             changelog = project.changelog
             releaseType = project.releaseType.toLowerCase()
+            addGameVersion("1.20")
             addGameVersion("1.19")
+            addGameVersion("1.18")
             mainArtifact(jar) {
-                it.displayName = "DiscordIntegration-Spigot $version (MC 1.19.3)"
+                it.displayName = "DiscordIntegration-Spigot $version (MC 1.20.1)"
             }
         }
         options{
@@ -163,11 +166,13 @@ task publishModrinth(type: TaskModrinthUpload) {
     if (project.hasProperty('modrinth.apikey')) { // $GRADLE_USER_HOME/gradle.properties
         token = getProperty("modrinth.apikey") // Use an environment property!
         projectId = 'rbJ7eS5V'
-        versionNumber = version+"spigot1.19.3"
-        versionName = "DiscordIntegration-Spigot $version (MC 1.19.3)"
+        versionNumber = version+"spigot1.20.1"
+        versionName = "DiscordIntegration-Spigot $version (MC 1.20.1)"
         uploadFile = shadowJar
         changelog = project.changelog
-        addGameVersion('1.19.3')
+        addGameVersion('1.18.2')
+        addGameVersion('1.19.4')
+        addGameVersion('1.20.1')
         addLoader('spigot')
         addLoader('paper')
         releaseType = project.releaseType.toUpperCase()

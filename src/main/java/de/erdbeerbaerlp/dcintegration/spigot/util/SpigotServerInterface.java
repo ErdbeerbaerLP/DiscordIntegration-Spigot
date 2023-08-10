@@ -1,13 +1,13 @@
 package de.erdbeerbaerlp.dcintegration.spigot.util;
 
 import dcshadow.net.kyori.adventure.text.Component;
+import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
-import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
+import de.erdbeerbaerlp.dcintegration.common.storage.linking.LinkManager;
 import de.erdbeerbaerlp.dcintegration.common.util.ComponentUtils;
-import de.erdbeerbaerlp.dcintegration.common.util.ServerInterface;
-import de.erdbeerbaerlp.dcintegration.common.util.Variables;
-import de.erdbeerbaerlp.dcintegration.spigot.DiscordIntegration;
+import de.erdbeerbaerlp.dcintegration.common.util.McServerInterface;
+import de.erdbeerbaerlp.dcintegration.spigot.DiscordIntegrationPlugin;
 import de.erdbeerbaerlp.dcintegration.spigot.command.DiscordCommandSender;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class SpigotServerInterface implements ServerInterface {
+public class SpigotServerInterface implements McServerInterface {
     @Override
     public int getMaxPlayers() {
         return Bukkit.getMaxPlayers();
@@ -43,16 +43,28 @@ public class SpigotServerInterface implements ServerInterface {
     }
 
     @Override
-    public void sendMCMessage(Component msg) {
+    public boolean playerHasPermissions(UUID player, String... permissions) {
+        final Player p = Bukkit.getPlayer(player);
+        if (p == null)
+            return false;
+        for (String permission : permissions) {
+
+            if (p.hasPermission(permission)) return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void sendIngameMessage(Component msg) {
         final Collection<? extends Player> l = Bukkit.getOnlinePlayers();
         msg = msg.replaceText(ComponentUtils.replaceLiteral("\\\n", Component.newline()));
         try {
             for (final Player p : l) {
-                if (!Variables.discord_instance.ignoringPlayers.contains(p.getUniqueId()) && !(PlayerLinkController.isPlayerLinked(p.getUniqueId()) && PlayerLinkController.getSettings(null, p.getUniqueId()).ignoreDiscordChatIngame)) {
+                if (!DiscordIntegration.INSTANCE.ignoringPlayers.contains(p.getUniqueId()) && !(LinkManager.isPlayerLinked(p.getUniqueId()) && LinkManager.getLink(null, p.getUniqueId()).settings.ignoreDiscordChatIngame)) {
                     final Map.Entry<Boolean, Component> ping = ComponentUtils.parsePing(msg, p.getUniqueId(), p.getName());
                     p.spigot().sendMessage(SpigotMessageUtils.adventureToSpigot(ping.getValue()));
                     if (ping.getKey()) {
-                        if (PlayerLinkController.getSettings(null, p.getUniqueId()).pingSound)
+                        if (LinkManager.isPlayerLinked(p.getUniqueId()) && LinkManager.getLink(null, p.getUniqueId()).settings.pingSound)
                             p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
                     }
                 }
@@ -65,10 +77,10 @@ public class SpigotServerInterface implements ServerInterface {
     }
 
     @Override
-    public void sendMCReaction(Member member, RestAction<Message> retrieveMessage, UUID targetUUID, EmojiUnion reactionEmote) {
+    public void sendIngameReaction(Member member, RestAction<Message> retrieveMessage, UUID targetUUID, EmojiUnion reactionEmote) {
         final Collection<? extends Player> l = Bukkit.getOnlinePlayers();
         for (final Player p : l) {
-            if (p.getUniqueId().equals(targetUUID) && !Variables.discord_instance.ignoringPlayers.contains(p.getUniqueId()) && !PlayerLinkController.getSettings(null, p.getUniqueId()).ignoreDiscordChatIngame && !PlayerLinkController.getSettings(null, p.getUniqueId()).ignoreReactions) {
+            if (p.getUniqueId().equals(targetUUID) && !DiscordIntegration.INSTANCE.ignoringPlayers.contains(p.getUniqueId()) && (LinkManager.isPlayerLinked(p.getUniqueId()) && !LinkManager.getLink(null, p.getUniqueId()).settings.ignoreDiscordChatIngame && !LinkManager.getLink(null, p.getUniqueId()).settings.ignoreReactions)) {
                 final String emote = ":" + reactionEmote.getName() + ":";
                 String outMsg = Localization.instance().reactionMessage.replace("%name%", member.getEffectiveName()).replace("%name2%", member.getUser().getAsTag()).replace("%emote%", emote);
                 if (Localization.instance().reactionMessage.contains("%msg%"))
@@ -86,11 +98,11 @@ public class SpigotServerInterface implements ServerInterface {
         cmdMsg.thenAccept((msg) -> {
             final CompletableFuture<Message> cmdMessage = msg.editOriginal(Localization.instance().commands.executing).submit();
 
-            Bukkit.getScheduler().runTask(DiscordIntegration.INSTANCE, () -> {
+            Bukkit.getScheduler().runTask(DiscordIntegrationPlugin.INSTANCE, () -> {
                 try {
                     Bukkit.dispatchCommand(new DiscordCommandSender(cmdMessage, sender), cmd);
-                }catch (CommandException e){
-                    cmdMessage.thenAccept((a)-> a.editMessage(e.getMessage()+(e.getCause() != null?("\n"+e.getCause().getMessage()):"")).queue());
+                } catch (CommandException e) {
+                    cmdMessage.thenAccept((a) -> a.editMessage(e.getMessage() + (e.getCause() != null ? ("\n" + e.getCause().getMessage()) : "")).queue());
                 }
             });
         });
@@ -106,7 +118,7 @@ public class SpigotServerInterface implements ServerInterface {
     }
 
     @Override
-    public void sendMCMessage(String msg, UUID uuid) {
+    public void sendIngameMessage(String msg, UUID uuid) {
         if (uuid == null) return;
         final Player player = Bukkit.getPlayer(uuid);
         if (player == null) return;
