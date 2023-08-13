@@ -5,6 +5,7 @@ import dcshadow.net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import dcshadow.net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import dcshadow.org.apache.commons.lang3.ArrayUtils;
 import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
+import de.erdbeerbaerlp.dcintegration.common.WorkThread;
 import de.erdbeerbaerlp.dcintegration.common.minecraftCommands.MCSubCommand;
 import de.erdbeerbaerlp.dcintegration.common.minecraftCommands.McCommandRegistry;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
@@ -90,7 +91,7 @@ public class SpigotEventListener implements Listener {
                     DiscordIntegration.INSTANCE.sendMessage(Localization.instance().playerJoin.replace("%player%", SpigotMessageUtils.formatPlayerName(p)));
             }
             // Fix link status (if user does not have role, give the role to the user, or vice versa)
-            final Thread fixLinkStatus = new Thread(() -> {
+            WorkThread.executeJob(() -> {
                 if (Configuration.instance().linking.linkedRoleID.equals("0")) return;
                 final UUID uuid = p.getUniqueId();
                 if (!LinkManager.isPlayerLinked(uuid)) return;
@@ -102,8 +103,6 @@ public class SpigotEventListener implements Listener {
                         guild.addRoleToMember(member, linkedRole).queue();
                 }
             });
-            fixLinkStatus.setDaemon(true);
-            fixLinkStatus.start();
         }
     }
 

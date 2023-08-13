@@ -16,12 +16,12 @@ plugins {
     id 'java'
     id "com.github.breadmoirai.github-release" version "2.3.7"
     id 'net.minecrell.plugin-yml.bukkit' version '0.5.1'
-    id "com.modrinth.minotaur" version "1.2.1"
+    id "com.modrinth.minotaur" version "2.+"
     id 'io.github.CDAGaming.cursegradle' version "1.6.0"
 }
 apply plugin: 'com.github.johnrengelman.shadow'
 
-version = "3.0.1"
+version = "3.0.2"
 group = "de.erdbeerbaerlp.dcintegration"
 archivesBaseName = "dcintegration-spigot"
 
@@ -103,7 +103,7 @@ configurations.all {
 dependencies{
 
     // =========  Common  =====================
-    embed('de.erdbeerbaerlp:dcintegration.common:3.0.1') {
+    embed('de.erdbeerbaerlp:dcintegration.common:3.0.2') {
         changing = true
     }
 
@@ -159,22 +159,17 @@ curseforge {
     }
 }
 
-import com.modrinth.minotaur.TaskModrinthUpload
 
-task publishModrinth(type: TaskModrinthUpload) {
-
+modrinth {
     if (project.hasProperty('modrinth.apikey')) { // $GRADLE_USER_HOME/gradle.properties
-        token = getProperty("modrinth.apikey") // Use an environment property!
+        token = project.getProperty("modrinth.apikey") // Use an environment property!
         projectId = 'rbJ7eS5V'
         versionNumber = version+"spigot1.20.1"
         versionName = "DiscordIntegration-Spigot $version (MC 1.20.1)"
         uploadFile = shadowJar
         changelog = project.changelog
-        addGameVersion('1.18.2')
-        addGameVersion('1.19.4')
-        addGameVersion('1.20.1')
-        addLoader('spigot')
-        addLoader('paper')
+        gameVersions = ["1.20.1", "1.19.4", "1.18.2"]
+        loaders = ['spigot','paper']
         releaseType = project.releaseType.toUpperCase()
     }
 }
@@ -182,4 +177,4 @@ task publishModrinth(type: TaskModrinthUpload) {
 task release {
 
 }
-tasks.release.dependsOn(tasks.build, tasks.curseforge, tasks.publishModrinth)
+tasks.release.dependsOn(tasks.build, tasks.curseforge, tasks.modrinth)

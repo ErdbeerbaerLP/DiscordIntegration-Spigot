@@ -1,5 +1,10 @@
 [
   {
+    "version": "3.0.2",
+    "changelog": "Fixed linking not being saved\nOptimized code",
+    "type": "alpha"
+  },
+  {
     "version": "3.0.0",
     "changelog": "Large discord integration rewrite adding new features and fixing long existing bugs",
     "type": "alpha"
