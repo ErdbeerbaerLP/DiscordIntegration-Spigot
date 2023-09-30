@@ -58,6 +58,7 @@ public class DiscordIntegrationPlugin extends JavaPlugin {
         loadDiscordInstance();
     }
 
+
     /**
      * Loads JDA and Config files
      */
@@ -219,7 +220,7 @@ public class DiscordIntegrationPlugin extends JavaPlugin {
             if (DiscordIntegration.INSTANCE != null) {
                 DiscordIntegration.INSTANCE.startThreads();
             }
-            UpdateChecker.runUpdateCheck("https://raw.githubusercontent.com/ErdbeerbaerLP/DiscordIntegration-Spigot/1.20/update_checker.json");
+            UpdateChecker.runUpdateCheck("https://raw.githubusercontent.com/ErdbeerbaerLP/DiscordIntegration-Spigot/master/update_checker.json");
 
             if (!DownloadSourceChecker.checkDownloadSource(new File(DiscordIntegrationPlugin.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("%")[0]))) {
                 DiscordIntegration.LOGGER.warn("You likely got this mod from a third party website.");
@@ -254,7 +255,7 @@ public class DiscordIntegrationPlugin extends JavaPlugin {
                 } else
                     DiscordIntegration.INSTANCE.sendMessage(Localization.instance().serverStopped);
             DiscordIntegration.INSTANCE.stopThreads();
-            DiscordIntegration.INSTANCE.kill(true);
+            DiscordIntegration.INSTANCE.kill(false);
             if (getServer().getPluginManager().getPlugin("dynmap") != null && dynmapListener != null) {
                 DynmapCommonAPIListener.unregister((DynmapCommonAPIListener) dynmapListener);
             }

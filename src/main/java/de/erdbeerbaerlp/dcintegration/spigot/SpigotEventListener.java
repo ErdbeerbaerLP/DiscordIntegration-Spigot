@@ -109,6 +109,7 @@ public class SpigotEventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAdvancement(PlayerAdvancementDoneEvent ev) {
         if (DiscordIntegration.INSTANCE == null) return;
+        if(ev.getAdvancement().getDisplay() == null) return;
         final Player owner = ev.getPlayer();
         AdvancementUtil.Advancement advancement;
         try {
@@ -140,10 +141,10 @@ public class SpigotEventListener implements Listener {
                     EmbedBuilder b = Configuration.instance().embedMode.advancementMessage.toEmbed();
                     b = b.setAuthor(SpigotMessageUtils.formatPlayerName(owner), null, avatarURL)
                             .setDescription(Localization.instance().advancementMessage.replace("%player%",
-                                            ChatColor.stripColor(SpigotMessageUtils.formatPlayerName(owner))).replace("%name%",
+                                            ChatColor.stripColor(SpigotMessageUtils.formatPlayerName(owner))).replace("%advName%",
                                             ChatColor.stripColor(advancement
                                                     .getTitle()))
-                                    .replace("%desc%",
+                                    .replace("%advDesc%",
                                             ChatColor.stripColor(advancement
                                                     .getDescription()))
                                     .replace("\\n", "\n"));
@@ -152,10 +153,10 @@ public class SpigotEventListener implements Listener {
             } else
                 DiscordIntegration.INSTANCE.sendMessage(Localization.instance().advancementMessage.replace("%player%",
                                 ChatColor.stripColor(SpigotMessageUtils.formatPlayerName(owner)))
-                        .replace("%name%",
+                        .replace("%advName%",
                                 ChatColor.stripColor(advancement
                                         .getTitle()))
-                        .replace("%desc%",
+                        .replace("%advDesc%",
                                 ChatColor.stripColor(advancement
                                         .getDescription()))
                         .replace("\\n", "\n"));
@@ -357,6 +358,7 @@ public class SpigotEventListener implements Listener {
             final Component comp = LegacyComponentSerializer.legacySection().deserialize(message);
             message = LegacyComponentSerializer.legacySection().serialize(MessageUtils.mentionsToNames(comp, channel.getGuild()));
         }
-        ev.setMessage(message);
+        if (!Configuration.instance().compatibility.disableParsingMentionsIngame)
+            ev.setMessage(message);
     }
 }
