@@ -7,23 +7,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 public class AdvancementUtil {
-    public static class Advancement {
-        public final String name;
-        public final String description;
-
-        public Advancement(String name, String description) {
-            this.name = name;
-            this.description = description;
-        }
-
-        public String getDescription() {
-            return description;
-        }
+    public record Advancement(String name, String description) {
 
         public String getTitle() {
-            return name;
+                return name;
+            }
         }
-    }
 
     public static Advancement getAdvancement(PlayerAdvancementDoneEvent ev) {
         final Object adv = ev.getAdvancement();

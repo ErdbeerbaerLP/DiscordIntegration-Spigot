@@ -13,6 +13,7 @@ import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.linking.LinkManager;
 import de.erdbeerbaerlp.dcintegration.common.util.DiscordMessage;
 import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
+import de.erdbeerbaerlp.dcintegration.common.util.MinecraftPermission;
 import de.erdbeerbaerlp.dcintegration.common.util.TextColors;
 import de.erdbeerbaerlp.dcintegration.spigot.api.SpigotDiscordEventHandler;
 import de.erdbeerbaerlp.dcintegration.spigot.util.AdvancementUtil;
@@ -34,6 +35,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
@@ -47,6 +50,9 @@ public class SpigotEventListener implements Listener {
         final Player profile = ev.getPlayer();
         if (DiscordIntegration.INSTANCE == null) return;
         LinkManager.checkGlobalAPI(profile.getUniqueId());
+        if(DiscordIntegration.INSTANCE.getServerInterface().playerHasPermissions(profile.getUniqueId(), MinecraftPermission.BYPASS_WHITELIST,MinecraftPermission.ADMIN)){
+            return;
+        }
         if (Configuration.instance().linking.whitelistMode && DiscordIntegration.INSTANCE.getServerInterface().isOnlineMode()) {
             try {
                 if (!LinkManager.isPlayerLinked(profile.getUniqueId())) {
@@ -109,7 +115,7 @@ public class SpigotEventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAdvancement(PlayerAdvancementDoneEvent ev) {
         if (DiscordIntegration.INSTANCE == null) return;
-        if(ev.getAdvancement().getDisplay() == null) return;
+        if (ev.getAdvancement().getDisplay() == null) return;
         final Player owner = ev.getPlayer();
         AdvancementUtil.Advancement advancement;
         try {
@@ -132,7 +138,9 @@ public class SpigotEventListener implements Listener {
                             .replace("%randomUUID%", UUID.randomUUID().toString())
                             .replace("%avatarURL%", avatarURL)
                             .replace("%advName%", ChatColor.stripColor(advancement.getTitle()))
-                            .replace("%advDesc%", ChatColor.stripColor(advancement.getDescription()))
+                            .replace("%advDesc%", ChatColor.stripColor(advancement.description()))
+                            .replace("%advNameURL%", URLEncoder.encode(ChatColor.stripColor(ev.getAdvancement().getDisplay().getTitle()), StandardCharsets.UTF_8))
+                            .replace("%advDescURL%", URLEncoder.encode(ChatColor.stripColor(ev.getAdvancement().getDisplay().getDescription()), StandardCharsets.UTF_8))
                             .replace("%avatarURL%", avatarURL)
                             .replace("%playerColor%", "" + TextColors.generateFromUUID(owner.getUniqueId()).getRGB())
                     );
@@ -146,8 +154,10 @@ public class SpigotEventListener implements Listener {
                                                     .getTitle()))
                                     .replace("%advDesc%",
                                             ChatColor.stripColor(advancement
-                                                    .getDescription()))
-                                    .replace("\\n", "\n"));
+                                                    .description()))
+                                    .replace("\\n", "\n").replace("%advNameURL%", URLEncoder.encode(ChatColor.stripColor(ev.getAdvancement().getDisplay().getTitle()), StandardCharsets.UTF_8))
+                                    .replace("%advDescURL%", URLEncoder.encode(ChatColor.stripColor(ev.getAdvancement().getDisplay().getDescription()), StandardCharsets.UTF_8))
+                            );
                     DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()));
                 }
             } else
@@ -158,8 +168,10 @@ public class SpigotEventListener implements Listener {
                                         .getTitle()))
                         .replace("%advDesc%",
                                 ChatColor.stripColor(advancement
-                                        .getDescription()))
-                        .replace("\\n", "\n"));
+                                        .description()))
+                        .replace("\\n", "\n").replace("%advNameURL%", URLEncoder.encode(ChatColor.stripColor(ev.getAdvancement().getDisplay().getTitle()), StandardCharsets.UTF_8))
+                        .replace("%advDescURL%", URLEncoder.encode(ChatColor.stripColor(ev.getAdvancement().getDisplay().getDescription()), StandardCharsets.UTF_8))
+                );
         }
 
 
@@ -241,10 +253,10 @@ public class SpigotEventListener implements Listener {
                                 break;
                             case PLAYER_ONLY:
                                 if (!isServer) {
-                                    if (!mcSubCommand.needsOP()) {
+                                    if (!mcSubCommand.needsOP() && source.hasPermission(MinecraftPermission.RUN_DISCORD_COMMAND.getAsString())) {
                                         final String txt = GsonComponentSerializer.gson().serialize(mcSubCommand.execute(cmdArgs, source.getUniqueId()));
                                         source.spigot().sendMessage(ComponentSerializer.parse(txt));
-                                    } else if (source.hasPermission("dcintegration.admin")) {
+                                    } else if (source.hasPermission(MinecraftPermission.ADMIN.getAsString()) || source.hasPermission(MinecraftPermission.RUN_DISCORD_COMMAND_ADMIN.getAsString())) {
                                         final String txt = GsonComponentSerializer.gson().serialize(mcSubCommand.execute(cmdArgs, source.getUniqueId()));
                                         source.spigot().sendMessage(ComponentSerializer.parse(txt));
                                     } else {
@@ -256,10 +268,10 @@ public class SpigotEventListener implements Listener {
                                 break;
                             case BOTH:
                                 if (!isServer) {
-                                    if (!mcSubCommand.needsOP()) {
+                                    if (!mcSubCommand.needsOP() && source.hasPermission(MinecraftPermission.RUN_DISCORD_COMMAND.getAsString())) {
                                         final String txt = GsonComponentSerializer.gson().serialize(mcSubCommand.execute(cmdArgs, source.getUniqueId()));
                                         source.spigot().sendMessage(ComponentSerializer.parse(txt));
-                                    } else if (source.hasPermission("dcintegration.admin")) {
+                                    } else if (source.hasPermission(MinecraftPermission.ADMIN.getAsString()) || source.hasPermission(MinecraftPermission.RUN_DISCORD_COMMAND_ADMIN.getAsString())) {
                                         final String txt = GsonComponentSerializer.gson().serialize(mcSubCommand.execute(cmdArgs, source.getUniqueId()));
                                         source.spigot().sendMessage(ComponentSerializer.parse(txt));
                                     } else {
@@ -317,6 +329,8 @@ public class SpigotEventListener implements Listener {
         if (LinkManager.isPlayerLinked(player.getUniqueId()) && LinkManager.getLink(null, player.getUniqueId()).settings.hideFromDiscord) {
             return;
         }
+        if (!DiscordIntegration.INSTANCE.getServerInterface().playerHasPermissions(ev.getPlayer().getUniqueId(), MinecraftPermission.SEMD_MESSAGES, MinecraftPermission.USER))
+            return;
         if (DiscordIntegration.INSTANCE.callEvent((e) -> {
             if (e instanceof SpigotDiscordEventHandler) {
                 return ((SpigotDiscordEventHandler) e).onMcChatMessage(ev);

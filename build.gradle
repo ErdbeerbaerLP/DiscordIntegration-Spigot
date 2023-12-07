@@ -21,7 +21,7 @@ plugins {
 }
 apply plugin: 'com.github.johnrengelman.shadow'
 
-version = "3.0.3"
+version = "3.0.5"
 group = "de.erdbeerbaerlp.dcintegration"
 archivesBaseName = "dcintegration-spigot"
 
@@ -103,8 +103,9 @@ configurations.all {
 dependencies{
 
     // =========  Common  =====================
-    embed('de.erdbeerbaerlp:dcintegration.common:3.0.3') {
+    embed('de.erdbeerbaerlp:dcintegration.common:3.0.5') {
         changing = true
+        transitive = false
     }
 
 

@@ -7,6 +7,7 @@ import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.linking.LinkManager;
 import de.erdbeerbaerlp.dcintegration.common.util.ComponentUtils;
 import de.erdbeerbaerlp.dcintegration.common.util.McServerInterface;
+import de.erdbeerbaerlp.dcintegration.common.util.MinecraftPermission;
 import de.erdbeerbaerlp.dcintegration.spigot.DiscordIntegrationPlugin;
 import de.erdbeerbaerlp.dcintegration.spigot.command.DiscordCommandSender;
 import net.dv8tion.jda.api.entities.Member;
@@ -60,6 +61,8 @@ public class SpigotServerInterface implements McServerInterface {
         msg = msg.replaceText(ComponentUtils.replaceLiteral("\\\n", Component.newline()));
         try {
             for (final Player p : l) {
+                if (!playerHasPermissions(p.getUniqueId(), MinecraftPermission.READ_MESSAGES, MinecraftPermission.USER))
+                    return;
                 if (!DiscordIntegration.INSTANCE.ignoringPlayers.contains(p.getUniqueId()) && !(LinkManager.isPlayerLinked(p.getUniqueId()) && LinkManager.getLink(null, p.getUniqueId()).settings.ignoreDiscordChatIngame)) {
                     final Map.Entry<Boolean, Component> ping = ComponentUtils.parsePing(msg, p.getUniqueId(), p.getName());
                     p.spigot().sendMessage(SpigotMessageUtils.adventureToSpigot(ping.getValue()));
@@ -80,6 +83,8 @@ public class SpigotServerInterface implements McServerInterface {
     public void sendIngameReaction(Member member, RestAction<Message> retrieveMessage, UUID targetUUID, EmojiUnion reactionEmote) {
         final Collection<? extends Player> l = Bukkit.getOnlinePlayers();
         for (final Player p : l) {
+            if (!playerHasPermissions(p.getUniqueId(), MinecraftPermission.READ_MESSAGES, MinecraftPermission.USER))
+                return;
             if (p.getUniqueId().equals(targetUUID) && !DiscordIntegration.INSTANCE.ignoringPlayers.contains(p.getUniqueId()) && (LinkManager.isPlayerLinked(p.getUniqueId()) && !LinkManager.getLink(null, p.getUniqueId()).settings.ignoreDiscordChatIngame && !LinkManager.getLink(null, p.getUniqueId()).settings.ignoreReactions)) {
                 final String emote = ":" + reactionEmote.getName() + ":";
                 String outMsg = Localization.instance().reactionMessage.replace("%name%", member.getEffectiveName()).replace("%name2%", member.getUser().getAsTag()).replace("%emote%", emote);
