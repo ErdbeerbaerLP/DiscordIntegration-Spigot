@@ -1,5 +1,9 @@
 [
   {
+    "version": "3.0.5.1",
+    "changelog": "Fix a few more bugs I forgot to fix with spigot",
+    "type": "beta"
+  },{
     "version": "3.0.5",
     "changelog": "Fix server stopping not working\nFix update checker\nImplement URL Encoded advancement message",
     "type": "beta"

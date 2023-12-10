@@ -144,7 +144,7 @@ public class SpigotEventListener implements Listener {
                             .replace("%avatarURL%", avatarURL)
                             .replace("%playerColor%", "" + TextColors.generateFromUUID(owner.getUniqueId()).getRGB())
                     );
-                    DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()));
+                    DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()),DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.serverChannelID));
                 } else {
                     EmbedBuilder b = Configuration.instance().embedMode.advancementMessage.toEmbed();
                     b = b.setAuthor(SpigotMessageUtils.formatPlayerName(owner), null, avatarURL)
@@ -158,7 +158,7 @@ public class SpigotEventListener implements Listener {
                                     .replace("\\n", "\n").replace("%advNameURL%", URLEncoder.encode(ChatColor.stripColor(ev.getAdvancement().getDisplay().getTitle()), StandardCharsets.UTF_8))
                                     .replace("%advDescURL%", URLEncoder.encode(ChatColor.stripColor(ev.getAdvancement().getDisplay().getDescription()), StandardCharsets.UTF_8))
                             );
-                    DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()));
+                    DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()),DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.serverChannelID));
                 }
             } else
                 DiscordIntegration.INSTANCE.sendMessage(Localization.instance().advancementMessage.replace("%player%",
@@ -171,7 +171,7 @@ public class SpigotEventListener implements Listener {
                                         .description()))
                         .replace("\\n", "\n").replace("%advNameURL%", URLEncoder.encode(ChatColor.stripColor(ev.getAdvancement().getDisplay().getTitle()), StandardCharsets.UTF_8))
                         .replace("%advDescURL%", URLEncoder.encode(ChatColor.stripColor(ev.getAdvancement().getDisplay().getDescription()), StandardCharsets.UTF_8))
-                );
+                        ,DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.serverChannelID));
         }
 
 
@@ -195,15 +195,15 @@ public class SpigotEventListener implements Listener {
                                 .replace("%avatarURL%", avatarURL)
                                 .replace("%playerColor%", "" + TextColors.generateFromUUID(player.getUniqueId()).getRGB())
                         );
-                        DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()));
+                        DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()),DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.serverChannelID));
                     } else {
                         EmbedBuilder b = Configuration.instance().embedMode.playerLeaveMessages.toEmbed();
                         b = b.setAuthor(SpigotMessageUtils.formatPlayerName(player), null, avatarURL)
                                 .setDescription(Localization.instance().playerLeave.replace("%player%", SpigotMessageUtils.formatPlayerName(player)));
-                        DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()));
+                        DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()),DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.serverChannelID));
                     }
                 } else
-                    DiscordIntegration.INSTANCE.sendMessage(Localization.instance().playerLeave.replace("%player%", SpigotMessageUtils.formatPlayerName(player)));
+                    DiscordIntegration.INSTANCE.sendMessage(Localization.instance().playerLeave.replace("%player%", SpigotMessageUtils.formatPlayerName(player)),DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.serverChannelID));
             }
         }
     }
@@ -300,8 +300,8 @@ public class SpigotEventListener implements Listener {
             if (!Localization.instance().playerDeath.isBlank())
                 if (Configuration.instance().embedMode.enabled && Configuration.instance().embedMode.deathMessage.asEmbed) {
                     final String avatarURL = Configuration.instance().webhook.playerAvatarURL.replace("%uuid%", p.getUniqueId().toString()).replace("%uuid_dashless%", p.getUniqueId().toString().replace("-", "")).replace("%name%", p.getName()).replace("%randomUUID%", UUID.randomUUID().toString());
-                    if (!Configuration.instance().embedMode.playerJoinMessage.customJSON.isBlank()) {
-                        final EmbedBuilder b = Configuration.instance().embedMode.playerJoinMessage.toEmbedJson(Configuration.instance().embedMode.playerJoinMessage.customJSON
+                    if (!Configuration.instance().embedMode.deathMessage.customJSON.isBlank()) {
+                        final EmbedBuilder b = Configuration.instance().embedMode.deathMessage.toEmbedJson(Configuration.instance().embedMode.deathMessage.customJSON
                                 .replace("%uuid%", p.getUniqueId().toString())
                                 .replace("%uuid_dashless%", p.getUniqueId().toString().replace("-", ""))
                                 .replace("%name%", SpigotMessageUtils.formatPlayerName(p))
@@ -310,7 +310,7 @@ public class SpigotEventListener implements Listener {
                                 .replace("%deathMessage%", ChatColor.stripColor(deathMessage).replace(SpigotMessageUtils.formatPlayerName(p) + " ", ""))
                                 .replace("%playerColor%", "" + TextColors.generateFromUUID(p.getUniqueId()).getRGB())
                         );
-                        DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()));
+                        DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()), DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.deathsChannelID));
                     } else {
                         final EmbedBuilder b = Configuration.instance().embedMode.deathMessage.toEmbed();
                         b.setDescription(":skull: " + Localization.instance().playerDeath.replace("%player%", SpigotMessageUtils.formatPlayerName(p)).replace("%msg%", ChatColor.stripColor(deathMessage).replace(SpigotMessageUtils.formatPlayerName(p) + " ", "")));
@@ -358,14 +358,14 @@ public class SpigotEventListener implements Listener {
                                 .replace("%msg%", text)
                                 .replace("%playerColor%", "" + TextColors.generateFromUUID(player.getUniqueId()).getRGB())
                         );
-                        DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()));
+                        DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()), channel);
                     } else {
                         EmbedBuilder b = Configuration.instance().embedMode.chatMessages.toEmbed();
                         if (Configuration.instance().embedMode.chatMessages.generateUniqueColors)
                             b = b.setColor(TextColors.generateFromUUID(player.getUniqueId()));
                         b = b.setAuthor(SpigotMessageUtils.formatPlayerName(player), null, avatarURL)
                                 .setDescription(text);
-                        DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()));
+                        DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()), channel);
                     }
                 } else
                     DiscordIntegration.INSTANCE.sendMessage(SpigotMessageUtils.formatPlayerName(player), player.getUniqueId().toString(), new DiscordMessage(null, text, true), channel);
