@@ -10,7 +10,6 @@ import de.erdbeerbaerlp.dcintegration.common.minecraftCommands.MCSubCommand;
 import de.erdbeerbaerlp.dcintegration.common.minecraftCommands.McCommandRegistry;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
-import de.erdbeerbaerlp.dcintegration.spigot.compat.FloodgateUtils;
 import de.erdbeerbaerlp.dcintegration.spigot.util.SpigotMessageUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -41,16 +40,8 @@ public class McDiscordCommand implements CommandExecutor {
                         case PLAYER_ONLY:
                             if ((sender instanceof final Player p)) {
                                 if (!mcSubCommand.needsOP()) {
-                                    //Intercept for bedrock linking
-                                    if (args[0].equals("link") && sender.getServer().getPluginManager().getPlugin("floodgate-bukkit") != null) {
-                                        if (FloodgateUtils.linkCommand(p)) return true;
-                                    }
                                     sender.spigot().sendMessage(SpigotMessageUtils.adventureToSpigot(mcSubCommand.execute(cmdArgs, p.getUniqueId())));
                                 }else if(p.hasPermission("dcintegration.admin")) {
-                                    //Intercept for bedrock linking
-                                    if (args[0].equals("link") && sender.getServer().getPluginManager().getPlugin("floodgate-bukkit") != null) {
-                                        if (FloodgateUtils.linkCommand(p)) return true;
-                                    }
                                     sender.spigot().sendMessage(SpigotMessageUtils.adventureToSpigot(mcSubCommand.execute(cmdArgs, p.getUniqueId())));
                                 }else{
                                     sender.spigot().sendMessage(SpigotMessageUtils.adventureToSpigot(Component.text(Localization.instance().commands.noPermission)));

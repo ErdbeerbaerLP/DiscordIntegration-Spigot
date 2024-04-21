@@ -56,6 +56,17 @@ public class SpigotServerInterface implements McServerInterface {
     }
 
     @Override
+    public String runMCCommand(String cmd) {
+        final DiscordCommandSender s = new DiscordCommandSender();
+        try {
+            Bukkit.dispatchCommand(s, cmd.trim());
+            return s.message.toString();
+        } catch (CommandException e) {
+            return e.getMessage();
+        }
+    }
+
+    @Override
     public void sendIngameMessage(Component msg) {
         final Collection<? extends Player> l = Bukkit.getOnlinePlayers();
         msg = msg.replaceText(ComponentUtils.replaceLiteral("\\\n", Component.newline()));
@@ -100,16 +111,13 @@ public class SpigotServerInterface implements McServerInterface {
 
     @Override
     public void runMcCommand(String cmd, final CompletableFuture<InteractionHook> cmdMsg, User sender) {
-        cmdMsg.thenAccept((msg) -> {
-            final CompletableFuture<Message> cmdMessage = msg.editOriginal(Localization.instance().commands.executing).submit();
-
-            Bukkit.getScheduler().runTask(DiscordIntegrationPlugin.INSTANCE, () -> {
-                try {
-                    Bukkit.dispatchCommand(new DiscordCommandSender(cmdMessage, sender), cmd);
-                } catch (CommandException e) {
-                    cmdMessage.thenAccept((a) -> a.editMessage(e.getMessage() + (e.getCause() != null ? ("\n" + e.getCause().getMessage()) : "")).queue());
-                }
-            });
+        Bukkit.getScheduler().runTask(DiscordIntegrationPlugin.INSTANCE, () -> {
+            final DiscordCommandSender s = new DiscordCommandSender(cmdMsg, sender);
+            try {
+                Bukkit.dispatchCommand(s, cmd);
+            } catch (CommandException e) {
+                s.sendMessage(e.getMessage());
+            }
         });
     }
 

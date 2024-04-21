@@ -7,11 +7,10 @@ import dcshadow.org.jetbrains.annotations.NotNull;
 import de.erdbeerbaerlp.dcintegration.spigot.util.SpigotMessageUtils;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
-import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.conversations.Conversation;
-import org.bukkit.conversations.ConversationAbandonedEvent;
+import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
@@ -23,56 +22,24 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("NullableProblems")
-public class DiscordCommandSender implements ConsoleCommandSender {
-    private CompletableFuture<Message> editedMessage;
-    final StringBuilder tmpMessage = new StringBuilder();
-    private final User sender;
+public class DiscordCommandSender implements CommandSender {
+    private CompletableFuture<Message> cmdMessage;
+    private final CompletableFuture<InteractionHook> cmdMsg;
+    public final StringBuilder message = new StringBuilder();
+    private final String name;
 
-    public DiscordCommandSender(CompletableFuture<Message> cmdMsg, User sender) {
-        this.editedMessage = cmdMsg;
-        this.sender = sender;
+    public DiscordCommandSender(CompletableFuture<InteractionHook> cmdMsg, User sender) {
+        this.cmdMsg = cmdMsg;
+        this.name = !sender.getDiscriminator().equals("0000") ? sender.getAsTag():sender.getName();
+    }
+    public DiscordCommandSender() {
+        this.cmdMsg = null;
+        this.name = "Discord Integration";
     }
 
     public void appendMessage(String msg) {
-        tmpMessage.append(DiscordSerializer.INSTANCE.serialize(LegacyComponentSerializer.legacySection().deserialize(msg), DiscordSerializerOptions.defaults())).append("\n");
+        message.append(DiscordSerializer.INSTANCE.serialize(LegacyComponentSerializer.legacySection().deserialize(msg), DiscordSerializerOptions.defaults())).append("\n");
     }
-
-
-    @Override
-    public boolean isConversing() {
-        return false;
-    }
-
-    @Override
-    public void acceptConversationInput(String input) {
-
-    }
-
-    @Override
-    public boolean beginConversation(Conversation conversation) {
-        return false;
-    }
-
-    @Override
-    public void abandonConversation(Conversation conversation) {
-
-    }
-
-    @Override
-    public void abandonConversation(Conversation conversation, ConversationAbandonedEvent details) {
-
-    }
-
-    @Override
-    public void sendRawMessage(String message) {
-        sendMessage(message);
-    }
-
-    @Override
-    public void sendRawMessage(UUID sender, String message) {
-        sendMessage(message);
-    }
-
 
     // Spigot start
     class SpigotProxy extends Spigot {
@@ -84,7 +51,15 @@ public class DiscordCommandSender implements ConsoleCommandSender {
          */
         public void sendMessage(@NotNull net.md_5.bungee.api.chat.BaseComponent component) {
             appendMessage(DiscordSerializer.INSTANCE.serialize(SpigotMessageUtils.spigotToAdventure(component)));
-            editedMessage.thenAccept((msg) -> editedMessage = msg.editMessage(tmpMessage.toString()).submit());
+            if (cmdMsg != null)
+                if (cmdMessage == null)
+                    cmdMsg.thenAccept((msg) -> {
+                        cmdMessage = msg.editOriginal(message.toString().trim()).submit();
+                    });
+                else
+                    cmdMessage.thenAccept((msg) -> {
+                        cmdMessage = msg.editMessage(message.toString().trim()).submit();
+                    });
         }
 
         /**
@@ -94,7 +69,15 @@ public class DiscordCommandSender implements ConsoleCommandSender {
          */
         public void sendMessage(@NotNull net.md_5.bungee.api.chat.BaseComponent... components) {
             appendMessage(DiscordSerializer.INSTANCE.serialize(SpigotMessageUtils.spigotToAdventure(components)));
-            editedMessage.thenAccept((msg) -> editedMessage = msg.editMessage(tmpMessage.toString()).submit());
+            if (cmdMsg != null)
+                if (cmdMessage == null)
+                    cmdMsg.thenAccept((msg) -> {
+                        cmdMessage = msg.editOriginal(message.toString().trim()).submit();
+                    });
+                else
+                    cmdMessage.thenAccept((msg) -> {
+                        cmdMessage = msg.editMessage(message.toString().trim()).submit();
+                    });
         }
 
         /**
@@ -105,7 +88,15 @@ public class DiscordCommandSender implements ConsoleCommandSender {
          */
         public void sendMessage(@Nullable UUID sender, @NotNull net.md_5.bungee.api.chat.BaseComponent component) {
             appendMessage(DiscordSerializer.INSTANCE.serialize(SpigotMessageUtils.spigotToAdventure(component)));
-            editedMessage.thenAccept((msg) -> editedMessage = msg.editMessage(tmpMessage.toString()).submit());
+            if (cmdMsg != null)
+                if (cmdMessage == null)
+                    cmdMsg.thenAccept((msg) -> {
+                        cmdMessage = msg.editOriginal(message.toString().trim()).submit();
+                    });
+                else
+                    cmdMessage.thenAccept((msg) -> {
+                        cmdMessage = msg.editMessage(message.toString().trim()).submit();
+                    });
         }
 
         /**
@@ -116,34 +107,75 @@ public class DiscordCommandSender implements ConsoleCommandSender {
          */
         public void sendMessage(@Nullable UUID sender, @NotNull net.md_5.bungee.api.chat.BaseComponent... components) {
             appendMessage(DiscordSerializer.INSTANCE.serialize(SpigotMessageUtils.spigotToAdventure(components), DiscordSerializerOptions.defaults()));
-            editedMessage.thenAccept((msg) -> editedMessage = msg.editMessage(tmpMessage.toString()).submit());
+            if (cmdMsg != null)
+                if (cmdMessage == null)
+                    cmdMsg.thenAccept((msg) -> {
+                        cmdMessage = msg.editOriginal(message.toString().trim()).submit();
+                    });
+                else
+                    cmdMessage.thenAccept((msg) -> {
+                        cmdMessage = msg.editMessage(message.toString().trim()).submit();
+                    });
         }
     }
 
     @Override
     public void sendMessage(String message) {
         appendMessage(message);
-        editedMessage.thenAccept((msg) -> editedMessage = msg.editMessage(DiscordSerializer.INSTANCE.serialize(LegacyComponentSerializer.legacySection().deserialize(tmpMessage.toString()))).submit());
+        if (cmdMsg != null)
+            if (cmdMessage == null)
+                cmdMsg.thenAccept((msg) -> {
+                    cmdMessage = msg.editOriginal(message.toString().trim()).submit();
+                });
+            else
+                cmdMessage.thenAccept((msg) -> {
+                    cmdMessage = msg.editMessage(message.toString().trim()).submit();
+                });
     }
 
     @Override
     public void sendMessage(String... messages) {
         for (String tosend : messages)
             appendMessage(tosend);
-        editedMessage.thenAccept((msg) -> editedMessage = msg.editMessage(DiscordSerializer.INSTANCE.serialize(LegacyComponentSerializer.legacySection().deserialize(tmpMessage.toString()))).submit());
+
+        if (cmdMsg != null)
+            if (cmdMessage == null)
+                cmdMsg.thenAccept((msg) -> {
+                    cmdMessage = msg.editOriginal(message.toString().trim()).submit();
+                });
+            else
+                cmdMessage.thenAccept((msg) -> {
+                    cmdMessage = msg.editMessage(message.toString().trim()).submit();
+                });
     }
 
     @Override
     public void sendMessage(UUID sender, String message) {
         appendMessage(message);
-        editedMessage.thenAccept((msg) -> editedMessage = msg.editMessage(DiscordSerializer.INSTANCE.serialize(LegacyComponentSerializer.legacySection().deserialize(tmpMessage.toString()))).submit());
+        if (cmdMsg != null)
+            if (cmdMessage == null)
+                cmdMsg.thenAccept((msg) -> {
+                    cmdMessage = msg.editOriginal(message.toString().trim()).submit();
+                });
+            else
+                cmdMessage.thenAccept((msg) -> {
+                    cmdMessage = msg.editMessage(message.toString().trim()).submit();
+                });
     }
 
     @Override
     public void sendMessage(UUID sender, String... messages) {
         for (String tosend : messages)
             appendMessage(tosend);
-        editedMessage.thenAccept((msg) -> editedMessage = msg.editMessage(DiscordSerializer.INSTANCE.serialize(LegacyComponentSerializer.legacySection().deserialize(tmpMessage.toString()))).submit());
+        if (cmdMsg != null)
+            if (cmdMessage == null)
+                cmdMsg.thenAccept((msg) -> {
+                    cmdMessage = msg.editOriginal(message.toString().trim()).submit();
+                });
+            else
+                cmdMessage.thenAccept((msg) -> {
+                    cmdMessage = msg.editMessage(message.toString().trim()).submit();
+                });
     }
 
     @Override
@@ -153,7 +185,7 @@ public class DiscordCommandSender implements ConsoleCommandSender {
 
     @Override
     public String getName() {
-        return sender.getAsTag();
+        return name;
     }
 
     @Override

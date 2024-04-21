@@ -178,6 +178,7 @@ public class DiscordIntegrationPlugin extends JavaPlugin {
 
             bstats.addCustomChart(new Metrics.SimplePie("webhook_mode", () -> Configuration.instance().webhook.enable ? "Enabled" : "Disabled"));
             bstats.addCustomChart(new Metrics.SimplePie("command_log", () -> !Configuration.instance().commandLog.channelID.equals("0") ? "Enabled" : "Disabled"));
+            bstats.addCustomChart(new Metrics.SimplePie("loader", () ->getServer().getName()));
         }
 
         //Run only after server is started

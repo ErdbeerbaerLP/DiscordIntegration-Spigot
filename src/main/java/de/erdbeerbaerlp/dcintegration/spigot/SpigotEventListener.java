@@ -6,6 +6,7 @@ import dcshadow.net.kyori.adventure.text.serializer.legacy.LegacyComponentSerial
 import dcshadow.org.apache.commons.lang3.ArrayUtils;
 import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 import de.erdbeerbaerlp.dcintegration.common.WorkThread;
+import de.erdbeerbaerlp.dcintegration.common.compat.FloodgateUtils;
 import de.erdbeerbaerlp.dcintegration.common.minecraftCommands.MCSubCommand;
 import de.erdbeerbaerlp.dcintegration.common.minecraftCommands.McCommandRegistry;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
@@ -42,6 +43,8 @@ import java.util.Arrays;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import static de.erdbeerbaerlp.dcintegration.common.DiscordIntegration.INSTANCE;
+
 public class SpigotEventListener implements Listener {
     public static final ArrayList<UUID> timeouts = new ArrayList<>();
 
@@ -50,13 +53,18 @@ public class SpigotEventListener implements Listener {
         final Player profile = ev.getPlayer();
         if (DiscordIntegration.INSTANCE == null) return;
         LinkManager.checkGlobalAPI(profile.getUniqueId());
-        if(DiscordIntegration.INSTANCE.getServerInterface().playerHasPermissions(profile.getUniqueId(), MinecraftPermission.BYPASS_WHITELIST,MinecraftPermission.ADMIN)){
+        final dcshadow.net.kyori.adventure.text.Component eventKick = INSTANCE.callEventO((e) -> e.onPlayerJoin(profile.getUniqueId()));
+        if (eventKick != null) {
+            final String kickmsg = LegacyComponentSerializer.legacySection().serialize(eventKick).replace("\\\\n", "\n");
+            ev.setKickMessage(kickmsg);
+        }
+        if (DiscordIntegration.INSTANCE.getServerInterface().playerHasPermissions(profile.getUniqueId(), MinecraftPermission.BYPASS_WHITELIST, MinecraftPermission.ADMIN)) {
             return;
         }
         if (Configuration.instance().linking.whitelistMode && DiscordIntegration.INSTANCE.getServerInterface().isOnlineMode()) {
             try {
                 if (!LinkManager.isPlayerLinked(profile.getUniqueId())) {
-                    ev.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, Localization.instance().linking.notWhitelistedCode.replace("%code%", "" + LinkManager.genLinkNumber(profile.getUniqueId())));
+                    ev.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, Localization.instance().linking.notWhitelistedCode.replace("%code%", "" + (FloodgateUtils.isBedrockPlayer(profile.getUniqueId()) ? LinkManager.genBedrockLinkNumber(profile.getUniqueId()) : LinkManager.genLinkNumber(profile.getUniqueId()))));
                 } else if (!DiscordIntegration.INSTANCE.canPlayerJoin(profile.getUniqueId())) {
                     ev.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, Localization.instance().linking.notWhitelistedRole);
                 }
@@ -120,6 +128,8 @@ public class SpigotEventListener implements Listener {
         AdvancementUtil.Advancement advancement;
         try {
             final AdvancementDisplay display = ev.getAdvancement().getDisplay();
+            if (display.isHidden()) return;
+            if (!display.shouldAnnounceChat()) return;
             advancement = new AdvancementUtil.Advancement(display.getTitle(), display.getDescription());
         } catch (NoSuchMethodError e) {
             advancement = AdvancementUtil.getAdvancement(ev);
@@ -144,7 +154,7 @@ public class SpigotEventListener implements Listener {
                             .replace("%avatarURL%", avatarURL)
                             .replace("%playerColor%", "" + TextColors.generateFromUUID(owner.getUniqueId()).getRGB())
                     );
-                    DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()),DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.serverChannelID));
+                    DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()), DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.serverChannelID));
                 } else {
                     EmbedBuilder b = Configuration.instance().embedMode.advancementMessage.toEmbed();
                     b = b.setAuthor(SpigotMessageUtils.formatPlayerName(owner), null, avatarURL)
@@ -158,20 +168,20 @@ public class SpigotEventListener implements Listener {
                                     .replace("\\n", "\n").replace("%advNameURL%", URLEncoder.encode(ChatColor.stripColor(ev.getAdvancement().getDisplay().getTitle()), StandardCharsets.UTF_8))
                                     .replace("%advDescURL%", URLEncoder.encode(ChatColor.stripColor(ev.getAdvancement().getDisplay().getDescription()), StandardCharsets.UTF_8))
                             );
-                    DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()),DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.serverChannelID));
+                    DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()), DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.serverChannelID));
                 }
             } else
                 DiscordIntegration.INSTANCE.sendMessage(Localization.instance().advancementMessage.replace("%player%",
-                                ChatColor.stripColor(SpigotMessageUtils.formatPlayerName(owner)))
-                        .replace("%advName%",
-                                ChatColor.stripColor(advancement
-                                        .getTitle()))
-                        .replace("%advDesc%",
-                                ChatColor.stripColor(advancement
-                                        .description()))
-                        .replace("\\n", "\n").replace("%advNameURL%", URLEncoder.encode(ChatColor.stripColor(ev.getAdvancement().getDisplay().getTitle()), StandardCharsets.UTF_8))
-                        .replace("%advDescURL%", URLEncoder.encode(ChatColor.stripColor(ev.getAdvancement().getDisplay().getDescription()), StandardCharsets.UTF_8))
-                        ,DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.serverChannelID));
+                                        ChatColor.stripColor(SpigotMessageUtils.formatPlayerName(owner)))
+                                .replace("%advName%",
+                                        ChatColor.stripColor(advancement
+                                                .getTitle()))
+                                .replace("%advDesc%",
+                                        ChatColor.stripColor(advancement
+                                                .description()))
+                                .replace("\\n", "\n").replace("%advNameURL%", URLEncoder.encode(ChatColor.stripColor(ev.getAdvancement().getDisplay().getTitle()), StandardCharsets.UTF_8))
+                                .replace("%advDescURL%", URLEncoder.encode(ChatColor.stripColor(ev.getAdvancement().getDisplay().getDescription()), StandardCharsets.UTF_8))
+                        , DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.serverChannelID));
         }
 
 
@@ -180,11 +190,12 @@ public class SpigotEventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerLeave(PlayerQuitEvent ev) {
         final Player player = ev.getPlayer();
-        if (LinkManager.isPlayerLinked(player.getUniqueId()) && LinkManager.getLink(null, player.getUniqueId()).settings.hideFromDiscord)
-            return;
         final String avatarURL = Configuration.instance().webhook.playerAvatarURL.replace("%uuid%", player.getUniqueId().toString()).replace("%uuid_dashless%", player.getUniqueId().toString().replace("-", "")).replace("%name%", player.getName()).replace("%randomUUID%", UUID.randomUUID().toString());
         if (DiscordIntegration.INSTANCE != null) {
+            INSTANCE.callEventC((a) -> a.onPlayerLeave(player.getUniqueId()));
             if (!Localization.instance().playerLeave.isBlank()) {
+                if (LinkManager.isPlayerLinked(player.getUniqueId()) && LinkManager.getLink(null, player.getUniqueId()).settings.hideFromDiscord)
+                    return;
                 if (Configuration.instance().embedMode.enabled && Configuration.instance().embedMode.playerLeaveMessages.asEmbed) {
                     if (!Configuration.instance().embedMode.playerLeaveMessages.customJSON.isBlank()) {
                         final EmbedBuilder b = Configuration.instance().embedMode.playerLeaveMessages.toEmbedJson(Configuration.instance().embedMode.playerLeaveMessages.customJSON
@@ -195,15 +206,15 @@ public class SpigotEventListener implements Listener {
                                 .replace("%avatarURL%", avatarURL)
                                 .replace("%playerColor%", "" + TextColors.generateFromUUID(player.getUniqueId()).getRGB())
                         );
-                        DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()),DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.serverChannelID));
+                        DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()), DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.serverChannelID));
                     } else {
-                        EmbedBuilder b = Configuration.instance().embedMode.playerLeaveMessages.toEmbed();
-                        b = b.setAuthor(SpigotMessageUtils.formatPlayerName(player), null, avatarURL)
+                        final EmbedBuilder b = Configuration.instance().embedMode.playerLeaveMessages.toEmbed()
+                                .setAuthor(SpigotMessageUtils.formatPlayerName(player), null, avatarURL)
                                 .setDescription(Localization.instance().playerLeave.replace("%player%", SpigotMessageUtils.formatPlayerName(player)));
-                        DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()),DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.serverChannelID));
+                        DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()), DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.serverChannelID));
                     }
                 } else
-                    DiscordIntegration.INSTANCE.sendMessage(Localization.instance().playerLeave.replace("%player%", SpigotMessageUtils.formatPlayerName(player)),DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.serverChannelID));
+                    DiscordIntegration.INSTANCE.sendMessage(Localization.instance().playerLeave.replace("%player%", SpigotMessageUtils.formatPlayerName(player)), DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.serverChannelID));
             }
         }
     }
@@ -212,17 +223,23 @@ public class SpigotEventListener implements Listener {
     public void onCommand(PlayerCommandPreprocessEvent ev) {
         String command = ev.getMessage();
         final Player source = ev.getPlayer();
+        String name = source.getName();
         final boolean isServer = source instanceof ConsoleCommandSender;
         command = command.replaceFirst(Pattern.quote("/"), "");
-        if (!Configuration.instance().commandLog.channelID.equals("0")) {
-            if (!ArrayUtils.contains(Configuration.instance().commandLog.ignoredCommands, command.split(" ")[0])) {
-                DiscordIntegration.INSTANCE.sendMessage(Configuration.instance().commandLog.message
-                        .replace("%sender%", source.getName())
-                        .replace("%cmd%", command)
-                        .replace("%cmd-no-args%", command.split(" ")[0]), DiscordIntegration.INSTANCE.getChannel(Configuration.instance().commandLog.channelID));
-            }
-        }
         if (DiscordIntegration.INSTANCE != null) {
+            if (Configuration.instance().webhook.enable && name.equals("Rcon") && Configuration.instance().webhook.useServerNameForRcon) {
+                name = Configuration.instance().webhook.serverName;
+            } else if (Configuration.instance().webhook.enable && name.equals("Server") && Configuration.instance().webhook.useServerNameForConsole) {
+                name = Configuration.instance().webhook.serverName;
+            }
+            if (!Configuration.instance().commandLog.channelID.equals("0")) {
+                if (!ArrayUtils.contains(Configuration.instance().commandLog.ignoredCommands, command.split(" ")[0])) {
+                    DiscordIntegration.INSTANCE.sendMessage(Configuration.instance().commandLog.message
+                            .replace("%sender%", name)
+                            .replace("%cmd%", command)
+                            .replace("%cmd-no-args%", command.split(" ")[0]), DiscordIntegration.INSTANCE.getChannel(Configuration.instance().commandLog.channelID));
+                }
+            }
             boolean raw = false;
 
             if (((command.startsWith("say")) && Configuration.instance().messages.sendOnSayCommand) || (command.startsWith("me") && Configuration.instance().messages.sendOnMeCommand)) {
@@ -234,7 +251,7 @@ public class SpigotEventListener implements Listener {
                     raw = true;
                     msg = "*" + MessageUtils.escapeMarkdown(msg.replaceFirst("me ", "").trim()) + "*";
                 }
-                DiscordIntegration.INSTANCE.sendMessage(source.getName(), isServer ? source.getUniqueId().toString() : "0000000", new DiscordMessage(null, msg, !raw), DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.chatOutputChannelID));
+                DiscordIntegration.INSTANCE.sendMessage(name, isServer ? source.getUniqueId().toString() : "0000000", new DiscordMessage(null, msg, !raw), DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.chatOutputChannelID));
             }
 
             if (command.startsWith("discord ") || command.startsWith("dc ")) {
@@ -340,38 +357,38 @@ public class SpigotEventListener implements Listener {
             return;
         }
         final String text = MessageUtils.escapeMarkdown(message);
-        if (DiscordIntegration.INSTANCE != null) {
-            final GuildMessageChannel channel = DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.chatOutputChannelID);
-            if (channel == null) {
-                return;
-            }
-            if (!Localization.instance().discordChatMessage.isBlank())
-                if (Configuration.instance().embedMode.enabled && Configuration.instance().embedMode.chatMessages.asEmbed) {
-                    final String avatarURL = Configuration.instance().webhook.playerAvatarURL.replace("%uuid%", player.getUniqueId().toString()).replace("%uuid_dashless%", player.getUniqueId().toString().replace("-", "")).replace("%name%", player.getName()).replace("%randomUUID%", UUID.randomUUID().toString());
-                    if (!Configuration.instance().embedMode.chatMessages.customJSON.isBlank()) {
-                        final EmbedBuilder b = Configuration.instance().embedMode.chatMessages.toEmbedJson(Configuration.instance().embedMode.chatMessages.customJSON
-                                .replace("%uuid%", player.getUniqueId().toString())
-                                .replace("%uuid_dashless%", player.getUniqueId().toString().replace("-", ""))
-                                .replace("%name%", SpigotMessageUtils.formatPlayerName(player))
-                                .replace("%randomUUID%", UUID.randomUUID().toString())
-                                .replace("%avatarURL%", avatarURL)
-                                .replace("%msg%", text)
-                                .replace("%playerColor%", "" + TextColors.generateFromUUID(player.getUniqueId()).getRGB())
-                        );
-                        DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()), channel);
-                    } else {
-                        EmbedBuilder b = Configuration.instance().embedMode.chatMessages.toEmbed();
-                        if (Configuration.instance().embedMode.chatMessages.generateUniqueColors)
-                            b = b.setColor(TextColors.generateFromUUID(player.getUniqueId()));
-                        b = b.setAuthor(SpigotMessageUtils.formatPlayerName(player), null, avatarURL)
-                                .setDescription(text);
-                        DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()), channel);
-                    }
-                } else
-                    DiscordIntegration.INSTANCE.sendMessage(SpigotMessageUtils.formatPlayerName(player), player.getUniqueId().toString(), new DiscordMessage(null, text, true), channel);
-            final Component comp = LegacyComponentSerializer.legacySection().deserialize(message);
-            message = LegacyComponentSerializer.legacySection().serialize(MessageUtils.mentionsToNames(comp, channel.getGuild()));
+        final GuildMessageChannel channel = DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.chatOutputChannelID);
+        if (channel == null) return;
+
+        final Component comp = LegacyComponentSerializer.legacySection().deserialize(message);
+        if (INSTANCE.callEvent((e) -> e.onMinecraftMessage(comp, ev.getPlayer().getUniqueId()))) {
+            return;
         }
+        if (!Localization.instance().discordChatMessage.isBlank())
+            if (Configuration.instance().embedMode.enabled && Configuration.instance().embedMode.chatMessages.asEmbed) {
+                final String avatarURL = Configuration.instance().webhook.playerAvatarURL.replace("%uuid%", player.getUniqueId().toString()).replace("%uuid_dashless%", player.getUniqueId().toString().replace("-", "")).replace("%name%", player.getName()).replace("%randomUUID%", UUID.randomUUID().toString());
+                if (!Configuration.instance().embedMode.chatMessages.customJSON.isBlank()) {
+                    final EmbedBuilder b = Configuration.instance().embedMode.chatMessages.toEmbedJson(Configuration.instance().embedMode.chatMessages.customJSON
+                            .replace("%uuid%", player.getUniqueId().toString())
+                            .replace("%uuid_dashless%", player.getUniqueId().toString().replace("-", ""))
+                            .replace("%name%", SpigotMessageUtils.formatPlayerName(player))
+                            .replace("%randomUUID%", UUID.randomUUID().toString())
+                            .replace("%avatarURL%", avatarURL)
+                            .replace("%msg%", text)
+                            .replace("%playerColor%", "" + TextColors.generateFromUUID(player.getUniqueId()).getRGB())
+                    );
+                    DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()), channel);
+                } else {
+                    EmbedBuilder b = Configuration.instance().embedMode.chatMessages.toEmbed();
+                    if (Configuration.instance().embedMode.chatMessages.generateUniqueColors)
+                        b = b.setColor(TextColors.generateFromUUID(player.getUniqueId()));
+                    b = b.setAuthor(SpigotMessageUtils.formatPlayerName(player), null, avatarURL)
+                            .setDescription(text);
+                    DiscordIntegration.INSTANCE.sendMessage(new DiscordMessage(b.build()), channel);
+                }
+            } else
+                DiscordIntegration.INSTANCE.sendMessage(SpigotMessageUtils.formatPlayerName(player), player.getUniqueId().toString(), new DiscordMessage(null, text, true), channel);
+        message = LegacyComponentSerializer.legacySection().serialize(MessageUtils.mentionsToNames(comp, channel.getGuild()));
         if (!Configuration.instance().compatibility.disableParsingMentionsIngame)
             ev.setMessage(message);
     }
