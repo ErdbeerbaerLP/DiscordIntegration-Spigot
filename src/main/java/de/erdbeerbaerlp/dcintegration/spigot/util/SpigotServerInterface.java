@@ -59,9 +59,12 @@ public class SpigotServerInterface implements McServerInterface {
     public String runMCCommand(String cmd) {
         final DiscordCommandSender s = new DiscordCommandSender();
         try {
-            Bukkit.dispatchCommand(s, cmd.trim());
+            Bukkit.getScheduler().callSyncMethod(DiscordIntegrationPlugin.INSTANCE, () -> {
+                Bukkit.dispatchCommand(s, cmd.trim());
+                return null;
+            }).get();
             return s.message.toString();
-        } catch (CommandException e) {
+        } catch (Exception e) {
             return e.getMessage();
         }
     }

@@ -11,6 +11,9 @@ import net.dv8tion.jda.api.interactions.InteractionHook;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.conversations.Conversation;
+import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
@@ -22,7 +25,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("NullableProblems")
-public class DiscordCommandSender implements CommandSender {
+public class DiscordCommandSender implements ConsoleCommandSender {
     private CompletableFuture<Message> cmdMessage;
     private final CompletableFuture<InteractionHook> cmdMsg;
     public final StringBuilder message = new StringBuilder();
@@ -256,5 +259,40 @@ public class DiscordCommandSender implements CommandSender {
     @Override
     public void setOp(boolean value) {
         Bukkit.getConsoleSender().setOp(value);
+    }
+
+    @Override
+    public boolean isConversing() {
+        return Bukkit.getConsoleSender().isConversing();
+    }
+
+    @Override
+    public void acceptConversationInput(@NotNull String input) {
+        Bukkit.getConsoleSender().acceptConversationInput(input);
+    }
+
+    @Override
+    public boolean beginConversation(@NotNull Conversation conversation) {
+        return Bukkit.getConsoleSender().beginConversation(conversation);
+    }
+
+    @Override
+    public void abandonConversation(@NotNull Conversation conversation) {
+        Bukkit.getConsoleSender().abandonConversation(conversation);
+    }
+
+    @Override
+    public void abandonConversation(@NotNull Conversation conversation, @NotNull ConversationAbandonedEvent details) {
+        Bukkit.getConsoleSender().abandonConversation(conversation, details);
+    }
+
+    @Override
+    public void sendRawMessage(@NotNull String message) {
+        Bukkit.getConsoleSender().sendRawMessage(message);
+    }
+
+    @Override
+    public void sendRawMessage(@Nullable UUID sender, @NotNull String message) {
+        Bukkit.getConsoleSender().sendRawMessage(sender, message);
     }
 }

@@ -1,5 +1,4 @@
-# Discord-Integration Spigot
-![](http://cf.way2muchnoise.eu/full_440292_downloads.svg) ![Modrinth Downloads](https://img.shields.io/modrinth/dt/dcintegration?style=flat&logo=modrinth)
+# Discord-Integration Spigot (Fixed to support console commands)
 
 This mod links your server chat with a channel on your discord server.
 

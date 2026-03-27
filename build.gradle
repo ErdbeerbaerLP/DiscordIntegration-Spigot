@@ -1,182 +1,118 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        repositories {
-            maven {
-                url "https://plugins.gradle.org/m2/"
-
-            }
-        }
-    }
-    dependencies {
-        classpath "com.github.jengelman.gradle.plugins:shadow:6.1.0"
-    }
-}
 plugins {
     id 'java'
-    id "com.github.breadmoirai.github-release" version "2.3.7"
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'net.minecrell.plugin-yml.bukkit' version '0.5.1'
-    id "com.modrinth.minotaur" version "2.+"
-    id 'io.github.CDAGaming.cursegradle' version "1.6.0"
+    id 'net.darkhax.curseforgegradle' version '1.1.26'
 }
-apply plugin: 'com.github.johnrengelman.shadow'
 
-version = "3.0.7"
-group = "de.erdbeerbaerlp.dcintegration"
-archivesBaseName = "dcintegration-spigot"
+group = 'de.erdbeerbaerlp.dcintegration'
+version = '3.0.7'
+archivesBaseName = 'dcintegration-spigot'
 
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+    withSourcesJar()
+}
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+repositories {
+    // 1) Your common library
+    mavenLocal()
+    maven { url = 'https://repo.erdbeerbaerlp.de/repository/maven-public/' }
 
-//ShadowJar
+    // 2) Floodgate snapshots
+    maven {
+        url = 'https://repo.opencollab.dev/maven-snapshots/'
+        content { includeGroup 'org.geysermc.floodgate' }
+    }
+
+    // 3) Dynmap API (Minebench)
+    maven {
+        url = 'https://repo.minebench.de/'
+        content { includeGroup 'us.dynmap' }
+    }
+
+    // 4) Spigot/Paper
+    maven {
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+        content { includeGroup 'org.spigotmc'; includeGroup 'org.bukkit' }
+    }
+    maven {
+        url = 'https://maven.elmakers.com/repository/'
+        content { includeGroup 'org.bukkit' }
+    }    
+
+    // 5) Sonatype (BungeeCord components)
+    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
+
+    // 6) Maven Central + JitPack
+    mavenCentral()
+    maven { url = 'https://jitpack.io' }
+}
+
 configurations {
     embed
     compileOnly.extendsFrom(embed)
 }
-shadowJar {
-    classifier = '1.20.4'
-    configurations = [project.configurations.embed]
-    exclude "/org/sqlite/**"
-}
-artifacts {
-    archives tasks.shadowJar
+
+dependencies {
+    // Embed your common library into the shadow JAR
+    embed 'de.erdbeerbaerlp:dcintegration.common:3.0.7'
+
+    // Spigot API only (no CraftBukkit internals)
+    compileOnly 'org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT'
+
+    // Floodgate Bukkit API
+    compileOnly 'org.geysermc.floodgate:api:2.1.1-SNAPSHOT'
+
+    // Votifier, excluding its legacy bukkit artifact
+    compileOnly('com.github.vexsoftware:votifier:v1.9') {
+        exclude group: 'org.bukkit', module: 'bukkit'
+    }
+
+    // Dynmap API 2.5
+    compileOnly 'us.dynmap:dynmap-api:2.5'
+
+    // Logging
+    compileOnly 'org.apache.logging.log4j:log4j-api:2.17.1'
 }
 
-//Generates plugin.yml
+tasks.withType(JavaCompile).configureEach {
+    options.release.set(21)
+}
+
+shadowJar {
+    // Only pull in your `embed` configuration; do NOT reference `embed` on runtimeClasspath
+    configurations = [project.configurations.embed]
+    archiveClassifier.set('all')
+    exclude 'org/sqlite/**'
+}
+
+jar {
+    archiveClassifier.set('')
+}
+
 bukkit {
-    name = "DiscordIntegration"
-    main = "de.erdbeerbaerlp.dcintegration.spigot.DiscordIntegrationPlugin"
-    author = "ErdbeerbaerLP"
-    apiVersion = "1.18"
-    version = project.version
-    website = "https://modrinth.com/plugin/dcintegration/"
+    name        = 'DiscordIntegration'
+    main        = 'de.erdbeerbaerlp.dcintegration.spigot.DiscordIntegrationPlugin'
+    apiVersion  = '1.18'
+    version     = project.version
+    softDepend  = ['Votifier', 'dynmap', 'floodgate-bukkit']
+
     commands {
         discord {
-            aliases = ["dc"]
-            permission = "dcintegration.discord"
+            aliases    = ['dc']
+            permission = 'dcintegration.discord'
         }
     }
+
     permissions {
         'dcintegration.discord' {
-            description = "Gives access to the basic Discord Integration commands"
-            setDefault('TRUE')
+            description = 'Access to basic Discord Integration commands'
+            setDefault('TRUE')                                         
         }
         'dcintegration.admin' {
-            description = "Gives access to the Discord Integration admin subcommands (like reload)"
-            setDefault('OP')
-        }
-    }
-    softDepend = ["Votifier", "dynmap", "floodgate-bukkit"]
-}
-
-
-repositories{
-    maven { url 'https://jitpack.io' }
-    maven {
-        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
-        content {
-            includeGroup 'org.bukkit'
-            includeGroup 'org.spigotmc'
-        }
-    }
-    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
-    maven { url = 'https://oss.sonatype.org/content/repositories/central' }
-    maven {
-        name = 'sonatype'
-        url = 'https://oss.sonatype.org/content/groups/public/'
-    }
-    maven { url "https://nexus.vankka.dev/repository/maven-public/" }
-    maven { url "https://repository.dev.gotan.io/repository/gotan.os/" }
-    maven { url "https://repo.opencollab.dev/maven-snapshots" }
-    maven { url "https://repo.opencollab.dev/maven-releases"  }
-    flatDir {
-        dirs 'libs'
-    }
-    maven { url "https://repo.erdbeerbaerlp.de/repository/maven-public/" }
-    mavenLocal()
-}
-
-configurations.all {
-    resolutionStrategy {
-        cacheChangingModulesFor 1, 'minutes'
-    }
-}
-dependencies{
-
-    // =========  Common  =====================
-    embed('de.erdbeerbaerlp:dcintegration.common:3.0.7') {
-        changing = true
-        transitive = false
-    }
-
-
-    // ============= Spigot =============
-    compileOnly 'org.spigotmc:spigot:1.20.4-R0.1-SNAPSHOT'
-
-
-    //Votifier
-    compileOnly('com.github.vexsoftware:votifier:v1.9'){
-        transitive = false
-    }
-
-    //Dynmap-Bukkit for workaround
-    compileOnly('com.github.webbukkit.dynmap:dynmap-api:v3.1'){
-        transitive = false
-    }
-
-    //Floodgate
-    compileOnly('org.geysermc.floodgate:api:2.1.1-SNAPSHOT')
-
-    //Dynmap-API
-    compileOnly('com.github.webbukkit:DynmapCoreAPI:2.5')
-
-    //Logging
-    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.17.1'
-}
-//Manifest attributes
-jar {
-    classifier = "1.20.1"
-}
-
-//Curseforge publishing
-curseforge {
-    if (project.hasProperty('curseforge.apikey')) { // $GRADLE_USER_HOME/gradle.properties
-        apiKey = getProperty("curseforge.apikey")
-        project {
-            id = '440292'
-            changelog = project.changelog
-            releaseType = project.releaseType.toLowerCase()
-            addGameVersion("1.20")
-            addGameVersion("1.19")
-            addGameVersion("1.18")
-            mainArtifact(jar) {
-                it.displayName = "DiscordIntegration-Spigot $version (MC 1.20.4)"
-            }
-        }
-        options{
-            bukkitIntegration = true
-            javaVersionAutoDetect = false
-            javaIntegration = true
+            description = 'Access to admin subcommands'
+            setDefault('OP')                                           
         }
     }
 }
-
-
-modrinth {
-    if (project.hasProperty('modrinth.apikey')) { // $GRADLE_USER_HOME/gradle.properties
-        token = project.getProperty("modrinth.apikey") // Use an environment property!
-        projectId = 'rbJ7eS5V'
-        versionNumber = version+"spigot1.20.4"
-        versionName = "DiscordIntegration-Spigot $version (MC 1.20.4)"
-        uploadFile = shadowJar
-        changelog = project.changelog
-        gameVersions = ["1.20.4","1.20.2","1.20.1", "1.19.4", "1.18.2"]
-        loaders = ['spigot','paper']
-        releaseType = project.releaseType.toUpperCase()
-    }
-}
-
-task release {
-
-}
-tasks.release.dependsOn(tasks.build, tasks.curseforge, tasks.modrinth)
